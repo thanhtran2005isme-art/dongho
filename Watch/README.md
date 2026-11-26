@@ -70,3 +70,7 @@ Các tài liệu và file Word cũ là bản thảo, cần cập nhật thông t
 ## Sáu phân hệ quản trị mở rộng
 
 Nhà cung cấp, phiếu nhập kho, thanh toán, giao hàng, bảo hành, đổi trả nằm trong menu Admin. Dùng tài khoản admin để tạo và chuyển trạng thái; staff chỉ xem. Phiếu nhập một dòng sản phẩm, xác nhận cộng tồn đúng một lần. Các hồ sơ thanh toán, giao hàng, bảo hành, đổi trả liên kết đơn đã xác nhận. Thanh toán/giao hàng là ghi nhận mô phỏng; đổi trả không tự hoàn tiền hoặc tăng tồn. Dữ liệu mới lưu chung `chrono-watch-v1`, xuất/nhập JSON cùng nghiệp vụ; nạp bộ demo cũ sẽ làm rỗng sáu phân hệ mới. Không có dữ liệu mẫu tự sinh. Xem [tài liệu phân hệ](docs/ADMIN-OPERATIONS.md). Kết quả kiểm thử cũ không bao phủ các màn hình mới.
+
+## Điều hướng Admin
+
+Admin dùng hash routing `index.html#/dashboard`, `#/products`, `#/orders`, `#/customers`, `#/inventory`, `#/categories`, `#/reports`, `#/suppliers`, `#/receipts`, `#/payments`, `#/deliveries`, `#/warranties`, `#/returns`, `#/users`. Mở link trực tiếp hoặc tải lại giữ đúng phân hệ; Back/Forward hoạt động qua lịch sử trình duyệt. Route sai hoặc Staff mở trang tài khoản sẽ về tổng quan. Khi chưa đăng nhập, giữ đích để mở sau khi đăng nhập; đăng xuất đặt lại tổng quan. Không tạo HTML riêng cho từng route; hash không gửi đến HTTP server, JMeter vẫn chỉ đo tài nguyên tĩnh. Bộ kiểm tra mới: `npx playwright test tests/e2e/admin-routing.spec.js`.

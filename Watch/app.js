@@ -9,6 +9,44 @@ let db, current, view='dashboard', query='', filter='', page=1, reportFrom='', r
 let productFilters={brand:'',type:'',status:'',sort:''};
 const views={dashboard:['Tổng quan','apps'],products:['Sản phẩm','watch'],orders:['Đơn hàng','shopping-bag'],customers:['Khách hàng','users'],inventory:['Kho hàng','box-alt'],categories:['Danh mục','list'],reports:['Báo cáo','chart-histogram'],suppliers:['Nhà cung cấp','truck'],receipts:['Phiếu nhập kho','clipboard'],payments:['Thanh toán','wallet'],deliveries:['Giao hàng','truck'],warranties:['Bảo hành','shield'],returns:['Đổi trả','return-arrow'],users:['Tài khoản','user-gear']};
 const isAdmin=()=>current?.role==='admin';
+// Định tuyến hash: hoạt động cả qua HTTP và mở index.html trực tiếp.
+// Chỉ chấp nhận route có trong menu; staff không được mở trang tài khoản.
+function routeView(hash,admin){
+  const key=String(hash||'').replace(/^#\/?/,'');
+  return Object.hasOwn(views,key)&&(key!=='users'||admin)?key:'dashboard';
+}
+function resetViewState(){
+  query='';filter='';productFilters={brand:'',type:'',status:'',sort:''};page=1;reportFrom='';reportTo='';
+}
+function replaceRoute(key){
+  const hash='#/'+key;
+  if(location.hash===hash)return;
+  try{history.replaceState(history.state,'',hash);}
+  catch{location.replace(hash);}
+}
+function syncRoute(){
+  const next=routeView(location.hash,isAdmin());
+  if(view!==next){resetViewState();$('#modal').close();}
+  view=next;
+  replaceRoute(view);
+}
+function navigate(key){
+  current=session();
+  if(!current)return login();
+  const next=routeView('#/'+key,isAdmin());
+  const hash='#/'+next;
+  resetViewState();
+  $('#modal').close();
+  view=next;
+  if(location.hash!==hash)location.hash=hash;
+  render();
+}
+window.addEventListener('hashchange',()=>{
+  current=session();
+  if(!current){if(!$('#login-form'))login();return;}
+  if(view!==routeView(location.hash,isAdmin())||location.hash!=='#/'+view||!$('#content'))render();
+});
+
 function read(){const raw=localStorage.getItem(S.KEY);if(!raw){const d=S.seed();localStorage.setItem(S.KEY,JSON.stringify(d));return d;}const d=JSON.parse(raw);if(d.version!==1||!Array.isArray(d.products)||!Array.isArray(d.users))throw new Error('Dữ liệu không hợp lệ. Hãy kiểm tra dữ liệu lưu trữ.');const demoAdmin=d.users.find(u=>u.id==='u1'&&u.username==='admin'&&u.name==='Nguyễn Minh Anh');if(demoAdmin){demoAdmin.name='Quản trị viên';localStorage.setItem(S.KEY,JSON.stringify(d));}return d;}
 function toast(message){$('#toast').textContent=message;$('#toast').style.display='block';clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('#toast').style.display='none',3500);}
 function session(){try{let raw=localStorage.getItem('chrono-session')||sessionStorage.getItem('chrono-session');if(!raw&&location.protocol==='file:'&&window.name.startsWith('chrono-session:'))raw=window.name.slice(15);const s=JSON.parse(raw||'null');return s&&Date.now()<s.expires?db.users.find(u=>u.id===s.id&&u.active):null;}catch{return null;}}
@@ -21,7 +59,7 @@ function login(){
   const remembered=localStorage.getItem('chrono-remembered-username');if(remembered){$('#login-form').elements.username.value=remembered;$('#login-form').elements.rememberUsername.checked=true;}
   $('#login-form').onsubmit=e=>{e.preventDefault();try{db=read();const f=new FormData(e.target);const u=db.users.find(x=>x.username===f.get('username').trim()&&x.password===f.get('password')&&x.active);if(!u)throw new Error('Tên đăng nhập hoặc mật khẩu không đúng, hoặc tài khoản đã bị khóa.');if(f.has('rememberUsername'))localStorage.setItem('chrono-remembered-username',u.username);else localStorage.removeItem('chrono-remembered-username');const saved=JSON.stringify({id:u.id,expires:Date.now()+8*60*60*1000});localStorage.setItem('chrono-session',saved);sessionStorage.removeItem('chrono-session');if(location.protocol==='file:')window.name='chrono-session:'+saved;current=u;render();}catch(err){$('#login-error').textContent=err.message;}};
 }
-function render(){current=session();if(!current)return login();if(view==='users'&&!isAdmin())view='dashboard';
+function render(){current=session();if(!current)return login();syncRoute();
   $('#app').innerHTML=`<aside class="sidebar"><div class="brand"><span class="brand-icon">${icon('watch')}</span><div><strong>AUREL</strong><small>WATCH STORE MANAGER</small></div></div><p class="nav-label">KHÔNG GIAN LÀM VIỆC</p><nav aria-label="Menu quản lý"><a class="qa-nav-link testing-nav-link" href="qa.html">${icon('clipboard')}Theo dõi kiểm thử</a>${Object.entries(views).filter(([k])=>k!=='users'||isAdmin()).map(([k,[label,i]])=>`<button data-view="${k}" class="${view===k?'active':''}" ${view===k?'aria-current="page"':''}>${icon(i)}${label}</button>`).join('')}<a class="qa-nav-link" href="lab.html">${icon('book-alt')}Phòng thực hành QA</a><a class="qa-nav-link home-nav-link" href="home.html">${icon('home')}Trang chủ</a></nav></aside><div class="main"><header class="topbar"><div class="breadcrumb">Cửa hàng đồng hồ <span style="padding:0 12px">/</span> ${views[view][0]}</div><div class="profile"><span class="avatar">${esc(current.name.trim()[0].toUpperCase())}</span><div><strong style="font-size:14px">${esc(current.name)}</strong><small>${isAdmin()?'Quản trị viên':'Nhân viên bán hàng'}</small></div><button class="small" data-action="logout" title="Đăng xuất">${icon('sign-out-alt')}<span>Đăng xuất</span></button></div></header><main class="content" id="content"></main></div>`; renderContent();
 }
 function heading(title,desc,buttons=''){return `<div class="heading"><div><span class="eyebrow">QUẢN LÝ CỬA HÀNG</span><h1>${title}</h1><p>${desc}</p></div><div class="actions">${buttons}</div></div>`;}
@@ -88,7 +126,7 @@ function demoDataForm(){
  const data=ChronoDemo.create();
  modal('Nạp dữ liệu thực hành', '<p>Bộ dữ liệu giả lập giúp trình diễn doanh thu, đơn hàng và lịch sử kho.</p><div class="demo-counts"><span><strong>18</strong>Sản phẩm</span><span><strong>10</strong>Khách hàng</span><span><strong>18</strong>Đơn hàng</span></div><p class="note">Gồm 10 đơn xác nhận, 4 đơn hủy và 4 đơn nháp trong 7 ngày gần nhất. Có hàng hết và sắp hết để kiểm thử.</p><p class="error">Thao tác sẽ thay thế dữ liệu nghiệp vụ hiện tại. Hãy xuất JSON trước nếu cần giữ dữ liệu. Tài khoản và sổ QA được giữ nguyên.</p>'+formActions('Nạp dữ liệu demo'),async()=>{
   const commit=()=>{const fresh=read(),active=session();if(!active)throw Error('Phiên đăng nhập đã hết hạn.');db=S.restoreBusiness(fresh,active.id,data);localStorage.setItem(S.KEY,JSON.stringify(db));current=session();};
-  try{if(navigator.locks)await navigator.locks.request('chrono-write',commit);else commit();$('#modal').close();view='dashboard';render();toast('Đã nạp dữ liệu demo. Có thể bắt đầu thực hành kiểm thử.');}catch(err){$('#form-error').textContent=err.message;}
+  try{if(navigator.locks)await navigator.locks.request('chrono-write',commit);else commit();$('#modal').close();navigate('dashboard');toast('Đã nạp dữ liệu demo. Có thể bắt đầu thực hành kiểm thử.');}catch(err){$('#form-error').textContent=err.message;}
  });
 }
 function customerForm(id){const c=db.customers.find(x=>x.id===id)||{};modal(id?'Chỉnh sửa khách hàng':'Thêm khách hàng',`<div class="form-grid">${field('Họ tên *','name',c.name,'text','required maxlength="100"')}${field('Số điện thoại *','phone',c.phone,'tel','required pattern="0[0-9]{9}" maxlength="10"')}${field('Email','email',c.email,'email','maxlength="150"')}${field('Địa chỉ','address',c.address,'text','maxlength="300"')}</div>${formActions()}`,data=>mutate((d,u)=>S.customer(d,u,data,id)));}
@@ -97,9 +135,9 @@ function orderForm(id){const o=db.orders.find(x=>x.id===id);modal(id?'Chỉnh s�
  const total=()=>{$('#order-total').textContent=money([...document.querySelectorAll('.order-line')].reduce((sum,row)=>{const productId=row.querySelector('select').value;const p=db.products.find(p=>p.id===productId);const old=o?.items.find(i=>i.productId===productId);return sum+(old?.price??p?.price??0)*(Number(row.querySelector('input').value)||0);},0));};$('#add-line').onclick=()=>add();if(o)o.items.forEach(add);else add();
 }
 function orderDetail(id){const o=db.orders.find(x=>x.id===id);const c=db.customers.find(x=>x.id===o.customerId);const extraMeta=[o.source==='storefront'?'<p>Nguồn đơn: <strong>Website khách (mô phỏng)</strong></p>':'',o.shipping?.phone?`<p>Liên hệ nhận hàng: ${esc(o.shipping.name)} · ${esc(o.shipping.phone)}${o.shipping.email?' · '+esc(o.shipping.email):''}</p>`:'',o.shipping?.address?`<p>Địa chỉ giao: ${esc(o.shipping.address)}</p>`:'',o.note?`<p>Ghi chú khách: ${esc(o.note)}</p>`:'',o.customerAccountId?`<p>Mã tài khoản khách: <code>${esc(o.customerAccountId)}</code></p>`:''].filter(Boolean).join('');modal(`Đơn hàng ${o.code}`,`<div class="detail-list"><p class="eyebrow">AUREL · PHIẾU ĐƠN HÀNG NỘI BỘ</p><p>Khách hàng: <strong>${esc(c?.name||o.shipping?.name||'—')}</strong></p><p>Ngày tạo: ${date(o.createdAt)}</p><p>Trạng thái: ${badge(o.status)}</p>${extraMeta}</div>${table(['Sản phẩm','Số lượng','Đơn giá','Thành tiền'],o.items.map(i=>`<tr><td>${esc(i.name)}</td><td>${i.quantity}</td><td>${money(i.price)}</td><td>${money(i.price*i.quantity)}</td></tr>`))}<div class="total">${money(o.total)}</div><p class="note">Phiếu nội bộ phục vụ đồ án, không thay thế hóa đơn thuế.</p><div class="form-actions"><button type="button" data-action="order-print">${icon('print')}In phiếu</button>${o.status==='draft'?`<button type="button" data-action="order-edit" data-id="${o.id}">Sửa đơn</button><button type="button" class="primary" data-action="order-confirm" data-id="${o.id}">Xác nhận bán</button>`:''}${o.status!=='cancelled'?`<button type="button" class="danger" data-action="order-cancel" data-id="${o.id}">Hủy đơn</button>`:''}<button type="button" data-action="close">Đóng</button></div>`);}
-document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.view){view=b.dataset.view;query='';filter='';productFilters={brand:'',type:'',status:'',sort:''};page=1;render();return;}const a=b.dataset.action,id=b.dataset.id;if(!a)return;
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.view)return navigate(b.dataset.view);const a=b.dataset.action,id=b.dataset.id;if(!a)return;
  if(a==='close')return $('#modal').close();
- if(a==='logout'){localStorage.removeItem('chrono-session');sessionStorage.removeItem('chrono-session');if(window.name.startsWith('chrono-session:'))window.name='';current=null;$('#modal').close();return login();}
+ if(a==='logout'){localStorage.removeItem('chrono-session');sessionStorage.removeItem('chrono-session');if(window.name.startsWith('chrono-session:'))window.name='';current=null;$('#modal').close();view='dashboard';resetViewState();replaceRoute('dashboard');return login();}
  if(!current)return;
  if(a.startsWith('ops-')&&Object.hasOwn(AdminOperations.config,view))return AdminOperations.handle(view,a,id,b);
  if(a==='prev'||a==='next'){page+=a==='prev'?-1:1;return renderContent();}
@@ -135,7 +173,7 @@ document.addEventListener('change',async e=>{
   if(!confirm(`Nhập ${preview.products.length} sản phẩm, ${preview.customers.length} khách hàng và ${preview.orders.length} đơn? Dữ liệu nghiệp vụ hiện tại sẽ được thay thế. Hãy xuất bản hiện tại trước khi tiếp tục.`))return;
   const commit=()=>{const fresh=read(),active=session();if(!active)throw Error('Phiên đăng nhập đã hết hạn.');db=S.restoreBusiness(fresh,active.id,input);localStorage.setItem(S.KEY,JSON.stringify(db));current=session();};
   if(navigator.locks)await navigator.locks.request('chrono-write',commit);else commit();
-  view='reports';render();toast('Đã khôi phục dữ liệu nghiệp vụ. Tài khoản vẫn giữ nguyên.');
+  navigate('reports');toast('Đã khôi phục dữ liệu nghiệp vụ. Tài khoản vẫn giữ nguyên.');
  }catch(err){toast(err.name==='QuotaExceededError'?'Bộ nhớ trình duyệt đã đầy. Dữ liệu cũ vẫn được giữ.':'Không nhập được dữ liệu: '+err.message);}
  finally{e.target.value='';}
 });
