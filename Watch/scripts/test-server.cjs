@@ -4,7 +4,9 @@ const fs=require('node:fs');
 const path=require('node:path');
 const root=path.resolve(__dirname,'..');
 const allowed=new Set([
-  '/index.html','/home.html','/home.css','/home.js',
+  '/index.html',
+  '/sanpham.html','/donhang.html','/khachhang.html','/khohang.html','/danhmuc.html','/baocao.html','/nhacungcap.html','/phieunhapkho.html','/thanhtoan.html','/giaohang.html','/baohanh.html','/doitra.html','/taikhoan.html',
+  '/home.html','/home.css','/home.js',
   '/storefront.css','/storefront.js',
   '/product.html','/cart.html','/checkout.html','/order-success.html',
   '/login.html','/register.html','/account.html',
