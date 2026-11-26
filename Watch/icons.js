@@ -16,5 +16,8 @@ window.ChronoIcons={
   'book-alt':'<path d="M12 5C9 2 5 2 2 3v17c4-1 7-1 10 2 3-3 6-3 10-2V3c-3-1-7-1-10 2v17"/>',
   'sign-in-alt':'<path d="M13 3h8v18h-8M2 12h13M10 7l5 5-5 5"/>',
   'sign-out-alt':'<path d="M10 3H3v18h7M9 12h13M17 7l5 5-5 5"/>',
+  truck:'<path d="M3 5h12v13H3zM15 9h4l3 4v5h-7M15 18H9"/><circle cx="7" cy="18" r="2"/><circle cx="19" cy="18" r="2"/>',
+  shield:'<path d="M12 2l9 4v6c0 5-4 8-9 10-5-2-9-5-9-10V6l9-4zM8 12l3 3 5-6"/>',
+  'return-arrow':'<path d="M9 5L3 11l6 6M3 11h12a6 6 0 0 1 6 6v2"/>',
   wallet:'<path d="M21 7H3V3h17v4M3 7v15h18V7M21 11h-6v7h6M17 14h.1"/>'
 };

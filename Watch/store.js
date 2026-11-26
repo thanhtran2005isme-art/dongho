@@ -218,7 +218,20 @@
       if(o.status==='confirmed')requireThat(Number.isFinite(Date.parse(o.confirmedAt)),'Thiếu thời điểm xác nhận đơn.');
     }
     for(const m of input.movements)requireThat(m&&typeof m.id==='string'&&ids.has(m.productId)&&Number.isSafeInteger(m.quantity)&&typeof m.reason==='string'&&Number.isFinite(Date.parse(m.createdAt)),'Lịch sử kho không hợp lệ.');
-    return {...clone(current),brands:clone(input.brands),types:clone(input.types),products:clone(input.products),customers:clone(input.customers),orders:clone(input.orders),movements:clone(input.movements)};
+    const operations={};
+    if(input.operations!==undefined){
+      requireThat(input.operations&&typeof input.operations==='object'&&!Array.isArray(input.operations),'Dữ liệu phân hệ mở rộng không hợp lệ.');
+      const statuses={suppliers:['active','inactive'],receipts:['draft','received','cancelled'],payments:['pending','paid','refunded'],deliveries:['pending','shipping','delivered','failed'],warranties:['active','processing','completed','expired'],returns:['pending','approved','rejected','completed']};
+      for(const [kind,allowed] of Object.entries(statuses)){
+        const rows=input.operations[kind]??[];
+        requireThat(Array.isArray(rows)&&rows.length<=20000&&rows.every(x=>x&&typeof x==='object'&&typeof x.id==='string'&&typeof x.code==='string'&&allowed.includes(x.status)&&Number.isFinite(Date.parse(x.createdAt))&&Object.values(x).every(v=>typeof v==='string'&&v.length<=1000||Number.isSafeInteger(v)&&v>=0))&&unique(rows,'id'),'Hồ sơ mở rộng không hợp lệ: '+kind);
+        if(kind!=='suppliers'&&kind!=='receipts')requireThat(rows.every(x=>input.orders.some(o=>o.id===x.orderId)),'Hồ sơ mở rộng không có đơn hàng tương ứng.');
+        if(['receipts','warranties','returns'].includes(kind))requireThat(rows.every(x=>ids.has(x.productId)&&Number.isSafeInteger(kind==='warranties'?x.months:x.quantity)&&(kind==='warranties'?x.months:x.quantity)>0),'Hồ sơ mở rộng thiếu sản phẩm hoặc số lượng hợp lệ.');
+        if(kind==='receipts')requireThat(rows.every(x=>(input.operations.suppliers||[]).some(s=>s.id===x.supplierId)&&Number.isSafeInteger(x.unitCost)&&x.unitCost>0&&x.amount===x.quantity*x.unitCost),'Phiếu nhập kho không hợp lệ.');
+        operations[kind]=clone(rows);
+      }
+    }
+    return {...clone(current),...(input.operations!==undefined||current.operations!==undefined?{operations}:{}),brands:clone(input.brands),types:clone(input.types),products:clone(input.products),customers:clone(input.customers),orders:clone(input.orders),movements:clone(input.movements)};
   }
   const api={KEY,seed,clone,migrate,nextOrderCode,product,customer,order,checkoutOrder,transition,stock,category,renameCategory,account,toggleAccount,editAccount,deleteAccount,user,imageSource,filterProducts,restoreBusiness};
   if(typeof module!=='undefined')module.exports=api;else root.WatchStore=api;

@@ -13,3 +13,7 @@ Website thực hành đồ án kiểm thử, trước đây mang tên CHRONO. HT
 - Đặt hàng, tài khoản khách, kiểm soát hiển thị đơn hàng và biểu mẫu liên hệ đều là **mô phỏng cục bộ trên trình duyệt**, không thu thập thẻ, không thanh toán thật, không gửi yêu cầu tới doanh nghiệp thật và không thay thế bảo mật production.
 - Đơn khách đặt qua `checkout.html` luôn tạo đơn **Nháp** (chưa trừ tồn kho); quản trị viên xác nhận trong `index.html` mới kiểm tra đủ tồn mọi dòng và trừ kho; hủy đơn đã xác nhận hoàn kho đúng một lần; giữ giá lịch sử trong đơn.
 - Namespace dữ liệu `chrono-*` và hồ sơ/bằng chứng cũ được giữ nguyên để tương thích và không làm mất dữ liệu đã lưu.
+
+## Phân hệ quản trị mở rộng
+
+Bổ sung nhà cung cấp, phiếu nhập một dòng, thanh toán, giao hàng, bảo hành theo serial và đổi trả. Chỉ Admin được ghi, Staff xem; dữ liệu cục bộ, không tích hợp bên ngoài. Xem `docs/ADMIN-OPERATIONS.md`.

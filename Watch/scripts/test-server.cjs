@@ -10,7 +10,7 @@ const allowed=new Set([
   '/login.html','/register.html','/account.html',
   '/orders.html','/order-detail.html','/wishlist.html',
   '/about.html','/contact.html',
-  '/app.js','/icons.js','/store.js','/demo-data.js','/styles.css',
+  '/app.js','/operations.js','/admin-operations.js','/icons.js','/store.js','/demo-data.js','/styles.css',
   '/qa.html','/qa.js','/qa-runner.js','/qa-cases.js','/qa.css',
   '/qa-portfolio.html','/qa-portfolio.css','/lab.html','/lab.css','/lab.js'
 ]);

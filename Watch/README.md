@@ -66,3 +66,7 @@ Báo cáo trong playwright-report, ảnh/trace khi lỗi trong test-results. Xem
 - [Kịch bản bảo vệ](docs/DEFENSE.md), [bug report](docs/BUG-REPORTS.md), [bản thảo báo cáo](docs/REPORT.md).
 
 Các tài liệu và file Word cũ là bản thảo, cần cập nhật thông tin sinh viên, ảnh hội thoại AI và kết quả Katalon/JMeter thật trước khi nộp. Không khẳng định số ca hoặc thời lượng demo là rubric giảng viên nếu chưa được cung cấp.
+
+## Sáu phân hệ quản trị mở rộng
+
+Nhà cung cấp, phiếu nhập kho, thanh toán, giao hàng, bảo hành, đổi trả nằm trong menu Admin. Dùng tài khoản admin để tạo và chuyển trạng thái; staff chỉ xem. Phiếu nhập một dòng sản phẩm, xác nhận cộng tồn đúng một lần. Các hồ sơ thanh toán, giao hàng, bảo hành, đổi trả liên kết đơn đã xác nhận. Thanh toán/giao hàng là ghi nhận mô phỏng; đổi trả không tự hoàn tiền hoặc tăng tồn. Dữ liệu mới lưu chung `chrono-watch-v1`, xuất/nhập JSON cùng nghiệp vụ; nạp bộ demo cũ sẽ làm rỗng sáu phân hệ mới. Không có dữ liệu mẫu tự sinh. Xem [tài liệu phân hệ](docs/ADMIN-OPERATIONS.md). Kết quả kiểm thử cũ không bao phủ các màn hình mới.
