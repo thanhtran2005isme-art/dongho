@@ -1,0 +1,26 @@
+'use strict';
+(()=>{
+  const $=s=>document.querySelector(s),tabs=[...document.querySelectorAll('[role=tab]')];
+  function select(name,focus=false){
+    if(!tabs.some(t=>t.dataset.tab===name))name='design';
+    for(const tab of tabs){const active=tab.dataset.tab===name;tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;$('#panel-'+tab.dataset.tab).hidden=!active;if(active&&focus)tab.focus();}
+    history.replaceState(null,'','#'+name);
+  }
+  tabs.forEach((tab,index)=>{tab.onclick=()=>select(tab.dataset.tab);tab.onkeydown=e=>{let i;if(['ArrowDown','ArrowRight'].includes(e.key))i=(index+1)%tabs.length;if(['ArrowUp','ArrowLeft'].includes(e.key))i=(index+tabs.length-1)%tabs.length;if(e.key==='Home')i=0;if(e.key==='End')i=tabs.length-1;if(i!==undefined){e.preventDefault();select(tabs[i].dataset.tab,true);}};});
+  select(location.hash.slice(1));window.addEventListener('hashchange',()=>select(location.hash.slice(1)));
+  function analyze(){const raw=$('#boundary-value').value.trim(),n=Number(raw),valid=raw!==''&&Number.isSafeInteger(n)&&n>0;const result=$('#boundary-result');result.dataset.valid=String(valid);result.textContent=valid?`Hợp lệ: ${n.toLocaleString('vi-VN')} VND. Mong đợi hệ thống chấp nhận.`:'Không hợp lệ. Mong đợi hệ thống từ chối và giữ nguyên dữ liệu đã lưu.';}
+  $('#boundary-form').onsubmit=e=>{e.preventDefault();analyze();};document.querySelectorAll('[data-value]').forEach(b=>b.onclick=()=>{$('#boundary-value').value=b.dataset.value;analyze();});analyze();
+  const requirements={orders:'FR-07: chỉ xác nhận đơn nháp khi mọi dòng đủ kho; kiểm tra mọi dòng trước khi trừ; không xác nhận lặp. Thiết kế ca bằng tồn, vượt tồn, thiếu kho ở dòng thứ hai và xác nhận lặp.',products:'FR-03: mã sản phẩm chuẩn hóa trim/viết hoa, không trùng; tên 1–100 ký tự; giá nguyên VND > 0; tồn nguyên >= 0. Thiết kế phân vùng tương đương và giá trị biên.',login:'FR-01: đăng nhập đúng tài khoản đang hoạt động; sai mật khẩu hoặc bị khóa phải bị từ chối; phiên hết hạn sau 8 giờ. Đây là mô phỏng client, không có bảo mật server.'};
+  function prompt(){$('#ai-prompt').value='Bạn là tester cho AUREL, web HTML/CSS/JavaScript lưu localStorage.\n\n'+requirements[$('#ai-feature').value]+'\n\nTrả về: mã ca, yêu cầu, tiền điều kiện, dữ liệu cụ thể, các bước, mong đợi, hậu điều kiện và kỹ thuật thiết kế. Nêu cả ca hợp lệ và không hợp lệ.\n\nKhông giả định có backend, MySQL, API hoặc thanh toán. Không tự ghi Pass/Fail, Bug ID hay bịa bằng chứng. Đánh dấu điều cần xác minh bằng chạy thực tế.';$('#copy-status').textContent='';}
+  $('#ai-feature').onchange=prompt;prompt();
+  $('#copy-prompt').onclick=async()=>{try{await navigator.clipboard.writeText($('#ai-prompt').value);$('#copy-status').textContent='Đã sao chép.';}catch{$('#ai-prompt').focus();$('#ai-prompt').select();$('#copy-status').textContent='Hãy nhấn Ctrl+C để sao chép phần đã chọn.';}};
+  $('#save-prompt').onclick=()=>{const url=URL.createObjectURL(new Blob([$('#ai-prompt').value],{type:'text/plain;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='chrono-qa-prompt.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+  const names=['Đăng nhập admin','Đăng nhập staff','Sai mật khẩu','Mã sản phẩm trùng','Giá bằng 0','Tạo khách hàng','Tạo, xác nhận & hủy đơn','Bán vượt tồn kho','Tìm kiếm trang chủ','Chạy 24 ca nghiệp vụ','Fail mô phỏng & retest','Giao diện mobile'];
+  names.forEach((name,i)=>{const id='KT-'+String(i+1).padStart(3,'0'),a=document.createElement('a'),span=document.createElement('span');span.textContent=id;a.append(span,document.createTextNode(name));a.href='testing/katalon/'+id+'.groovy';a.download=id+'.groovy';$('#katalon-cases').append(a);});
+  function load(){const n=Number($('#load-users').value);$('#load-samples').textContent=String(n*5*8);$('#jmeter-command').textContent=`jmeter -n -t testing/jmeter/chrono-static.jmx -Jusers=${n} -Jloops=5 -Jramp=10 -Jport=5517 -l results.jtl -e -o jmeter-report`;}
+  $('#load-users').onchange=load;load();
+  const items=['Web chạy cùng origin/cổng với dữ liệu đã chuẩn bị.','Đã xuất bản sao dữ liệu trước khi nạp demo.','Có ảnh lời nhắc AI và mã nguồn đúng phiên bản.','Chọn được test design và dữ liệu biên để giải thích.','Có lần chạy Katalon thật, report và ảnh/log.','Có report JMeter thật; nói rõ chỉ đo HTTP tài nguyên.','Phân biệt được Fail mô phỏng, bug thật và Not Run.','Đã tập demo xác nhận, hủy đơn và đối chiếu tồn.'];
+  const key='chrono-rehearsal-v1';let checked=[];try{const saved=JSON.parse(localStorage.getItem(key)||'[]');if(Array.isArray(saved))checked=saved.filter(x=>Number.isInteger(x)&&x>=0&&x<items.length);}catch{}
+  function status(note=''){$('#rehearsal-status').textContent=`Đã chuẩn bị ${checked.length}/${items.length} mục. ${note}`;}
+  items.forEach((name,i)=>{const label=document.createElement('label'),input=document.createElement('input'),span=document.createElement('span');input.type='checkbox';input.checked=checked.includes(i);span.textContent=name;label.append(input,span);$('#rehearsal-list').append(label);input.onchange=()=>{checked=[...document.querySelectorAll('#rehearsal-list input')].flatMap((x,j)=>x.checked?[j]:[]);try{localStorage.setItem(key,JSON.stringify(checked));status();}catch{status('Không lưu được; hãy kiểm tra quyền lưu trữ.');}};});status();
+})();

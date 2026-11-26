@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AUREL QA · Theo dõi kiểm thử</title>
+  <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="qa.css">
+  <script defer src="store.js"></script><script defer src="qa-runner.js"></script><script defer src="qa-cases.js"></script><script defer src="qa.js"></script>
+</head>
+<body class="qa-page">
+  <header class="qa-header"><div><a class="qa-wordmark" href="lab.html">AUREL / QA WORKSPACE</a><h1>Theo dõi kiểm thử</h1><p class="muted">Thiết kế rõ ràng. Thực thi có bằng chứng. Theo dõi đến khi retest.</p></div><div class="actions"><a class="qa-link" href="lab.html">Phòng thực hành</a><a class="qa-link" href="qa-portfolio.html">Hồ sơ bảo vệ</a><a class="qa-link" href="home.html">Trang chủ</a><a class="qa-link" href="index.html">← Tổng quan</a></div></header>
+  <nav class="qa-section-nav" aria-label="Khu vực kiểm thử"><a href="#manual-section">Đợt kiểm thử</a><a href="#cases-section">90 test case</a><a href="#bugs-section">Sổ lỗi</a><a href="#auto-section">Test tự động</a><a href="lab.html#katalon">Katalon</a><a href="lab.html#jmeter">JMeter</a></nav>
+  <main class="qa-main">
+    <div class="qa-intro">
+      <div><h2>Thực hành kiểm thử từng bước</h2><p>90 ca thủ công · 24 ca nghiệp vụ tự động · Bộ script Katalon & JMeter</p></div><a class="qa-link" href="lab.html#design">Học test design</a>
+    </div>
+    <div class="qa-choices">
+      <section class="practice-guide" aria-labelledby="practice-title">
+        <h2 id="practice-title">Tự kiểm thử một chức năng</h2>
+        <p>Bạn thao tác trên trang chủ hoặc cửa hàng rồi ghi kết quả.</p>
+        <ol>
+          <li><b>1</b><span><strong>Đọc yêu cầu</strong><small>Xem bước làm và kết quả mong đợi.</small></span></li>
+          <li><b>2</b><span><strong>Thao tác trên web</strong><small>Quan sát kết quả thực tế.</small></span></li>
+          <li><b>3</b><span><strong>Lưu kết quả</strong><small>Đối chiếu hai kết quả và ghi bằng chứng.</small></span></li>
+        </ol>
+        <div class="actions qa-choice-actions">
+          <button id="practice-search" class="primary" type="button" disabled>Thực hành tìm kiếm · TC-064</button>
+          <button id="practice-example" type="button" disabled>Thử ca sai mật khẩu · TC-003 →</button>
+        </div>
+      </section>
+      <section class="practice-guide qa-auto-entry" aria-labelledby="quick-auto-title">
+        <h2 id="quick-auto-title">Chạy kiểm thử tự động</h2>
+        <p>Chạy toàn bộ hoặc chọn nhóm chức năng để xem kết quả Pass / Fail trên dữ liệu mẫu.</p>
+        <a class="qa-link" href="#auto-section">Mở bộ kiểm thử tự động</a><p class="qa-local-note">Lưu trên trình duyệt này. Xuất báo cáo để giữ bằng chứng và sao lưu.</p>
+      </section>
+    </div>
+    <div class="qa-load-status">
+      <p id="qa-message" role="status">Đang tải danh sách test case…</p>
+      <button id="next-case" type="button" hidden>Ca chưa chạy tiếp theo</button>
+      <a id="jump-cases" class="qa-link" href="#cases-section" hidden>Xem test case ↓</a>
+      <button id="retry-load" type="button" hidden>Thử tải lại</button>
+    </div>
+    <section class="card qa-run-card" id="manual-section">
+      <div class="card-header"><h2>Đợt kiểm thử thủ công</h2></div>
+      <div class="qa-run-overview">
+        <label class="field">Đợt đang xem<select id="run-picker" disabled></select></label>
+        <div class="qa-progress">
+          <label for="manual-progress">Tiến độ thực hiện</label>
+          <span id="manual-progress-text">Đang tải…</span>
+          <progress id="manual-progress" value="0" max="1" aria-describedby="manual-progress-note"></progress>
+          <small id="manual-progress-note">Tính các ca đã ghi Pass hoặc Fail.</small>
+        </div>
+      </div>
+      <details id="run-settings" class="qa-run-settings">
+        <summary>Quản lý đợt và xuất báo cáo</summary>
+        <div class="toolbar">
+          <label class="field">Tên đợt mới<input id="new-run-name" maxlength="150" placeholder="Ví dụ: Kiểm thử lần 2"></label>
+          <button id="new-run" type="button" disabled>Tạo đợt mới</button>
+          <label class="field">Khôi phục từ JSON<input id="import-run" type="file" accept=".json,application/json" disabled></label>
+        </div>
+        <p class="note">File nhập được lưu thành đợt mới sau khi xác nhận.</p>
+        <form id="run-form" class="card-body">
+          <h3>Thông tin đợt</h3>
+          <div class="form-grid">
+            <label class="field">Người thực thi<input name="tester" maxlength="100" placeholder="Họ tên người kiểm thử"></label>
+            <label class="field">Phiên bản nguồn<input name="version" maxlength="100" placeholder="Ví dụ: AUREL 1.2"></label>
+            <label class="field">Môi trường<input name="environment" maxlength="300" placeholder="Windows, Chrome, địa chỉ web…"></label>
+            <label class="field">Tên đợt kiểm thử<input name="runName" maxlength="150"></label>
+          </div>
+          <div class="form-actions"><button type="submit" disabled>Lưu thông tin đợt</button></div>
+        </form>
+        <div class="qa-manual-exports">
+          <strong>Xuất kết quả đợt thủ công</strong>
+          <div class="actions">
+            <button id="export-results" type="button" disabled>Xuất kết quả JSON</button>
+            <button id="export-csv" type="button" disabled>Xuất CSV cho Excel</button>
+            <button id="export-report" type="button" disabled>Xuất báo cáo Markdown</button>
+          </div>
+        </div>
+      </details>
+    </section>
+    <section id="metrics" class="qa-metrics" aria-label="Thống kê kiểm thử"></section>
+    <section id="cases-section" class="card"><div class="card-header"><h2>Danh sách test case</h2><span id="result-count" class="muted"></span></div><div class="toolbar"><label class="field qa-search">Tìm test case<input id="case-search" placeholder="Mã, yêu cầu, chức năng hoặc mục tiêu"></label><label class="field">Trạng thái<select id="status-filter"><option value="">Tất cả</option><option>Not Run</option><option>Pass</option><option>Fail</option><option>Blocked</option></select></label><label class="field">Ưu tiên<select id="priority-filter"><option value="">Tất cả</option><option>High</option><option>Medium</option><option>Low</option></select></label><label class="field">Chức năng<select id="feature-filter"><option value="">Tất cả chức năng</option></select></label><button id="clear-case-filters" type="button">Xóa bộ lọc</button></div><p class="qa-case-hint">Cuộn trong khung danh sách để xem các ca tiếp theo.</p><div class="table-wrap qa-case-scroll" tabindex="0" aria-label="Danh sách test case"><table><thead><tr><th>Mã / Yêu cầu</th><th>Chức năng / Mục tiêu</th><th>Ưu tiên</th><th>Trạng thái</th><th>Bug ID</th><th>Thao tác</th></tr></thead><tbody id="case-list"></tbody></table></div></section>
+    <section class="card" id="bugs-section" aria-labelledby="failures-title"><div class="card-header"><div><h2 id="failures-title">Lỗi cần theo dõi</h2><p>Các ca được ghi Fail trong đợt hiện tại; mở ca để xem và sửa kết quả.</p></div><div class="actions"><span id="fail-count" class="badge off">0 ca Fail</span><button id="export-bugs" type="button" class="small" disabled>Xuất lỗi CSV</button></div></div><div class="table-wrap"><table><thead><tr><th>Test case</th><th>Bug ID</th><th>Kết quả thực tế</th><th>Bằng chứng</th><th>Thao tác</th></tr></thead><tbody id="fail-list"></tbody></table></div></section>
+    <section class="card" id="coverage-section"><div class="card-header"><h2>Truy vết yêu cầu</h2></div><div class="table-wrap"><table><thead><tr><th>Yêu cầu</th><th>Số ca</th><th>Pass</th><th>Fail</th><th>Blocked</th><th>Not Run</th></tr></thead><tbody id="trace-list"></tbody></table></div></section>
+    <section class="card qa-auto-card" id="auto-section" aria-labelledby="smoke-title">
+      <div class="card-header">
+        <div>
+          <h2 id="smoke-title">Kiểm thử chức năng tự động</h2>
+          <p>Mỗi ca kiểm tra một quy tắc nghiệp vụ trên bộ dữ liệu mẫu riêng.</p>
+        </div>
+      </div>
+      <div class="qa-auto-controls">
+        <label class="field">Nhóm kiểm thử<select id="smoke-group"></select></label>
+        <div class="actions">
+          <button id="run-smoke" type="button" class="primary" disabled>Chạy kiểm thử</button>
+          <button id="demo-smoke-fail" type="button" disabled aria-describedby="smoke-demo-tip">Demo Fail mô phỏng</button>
+        </div>
+        <p id="smoke-demo-tip">Demo chạy bộ 12 ca cơ bản với một lỗi cố ý để bạn xem cách phát hiện Fail.</p>
+      </div>
+      <div class="card-body">
+        <label class="field smoke-history" hidden>Lần chạy đã lưu<select id="smoke-run-picker" disabled></select></label>
+        <p id="smoke-summary" role="status">Chưa chạy. Chọn nhóm kiểm thử rồi nhấn nút chạy.</p>
+        <p id="smoke-diff" class="muted" hidden></p>
+        <p class="note">Dùng bộ này để kiểm tra quy tắc nghiệp vụ. Các bài Playwright kiểm tra thao tác trên giao diện và có báo cáo riêng. <a href="docs/evidence/local-2026-11-26/playwright-report/index.html" target="_blank" rel="noopener" id="playwright-report-link">Xem báo cáo Playwright</a>.</p>
+      </div>
+      <div id="smoke-result-actions" class="qa-auto-result-actions" hidden>
+        <label class="field">Lọc kết quả
+          <select id="smoke-status-filter"><option value="">Tất cả</option><option>Pass</option><option>Fail</option></select>
+        </label>
+        <button id="export-smoke" type="button" disabled>Xuất báo cáo tự động JSON</button>
+      </div>
+      <div id="auto-results" class="table-wrap" hidden>
+        <table aria-label="Kết quả kiểm thử tự động">
+          <thead><tr><th>Mã / Yêu cầu</th><th>Chức năng</th><th>Kết quả</th><th>Quan sát</th><th>Thời gian</th></tr></thead>
+          <tbody id="smoke-list"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <dialog id="case-dialog" aria-labelledby="case-title">
+    <div class="modal-head">
+      <h2 id="case-title" tabindex="-1" autofocus></h2>
+      <button id="close-case" type="button" aria-label="Đóng chi tiết">×</button>
+    </div>
+    <form id="case-form" class="form-body">
+      <h3 class="case-step-title">1. Đọc và thực hiện</h3>
+      <div id="case-instructions" class="qa-instructions"></div>
+      <div class="practice-tip">
+        <a id="case-target" href="index.html" target="_blank" rel="noopener">Mở cửa hàng trong tab mới ↗</a>
+        <a id="case-secondary-target" href="index.html" target="_blank" rel="noopener" hidden>Mở quản lý cửa hàng ↗</a>
+        <p id="case-target-tip">Thực hiện các bước, sau đó quay lại tab này để ghi kết quả.</p>
+      </div>
+      <h3 class="case-step-title">2. Đối chiếu và ghi kết quả</h3>
+      <div class="form-grid">
+        <label class="field">Kết quả thực thi
+          <select name="status" aria-describedby="case-status-help">
+            <option value="Not Run">Not Run · Chưa chạy</option>
+            <option value="Pass">Pass · Đúng mong đợi</option>
+            <option value="Fail">Fail · Khác mong đợi</option>
+            <option value="Blocked">Blocked · Bị chặn</option>
+          </select>
+        </label>
+        <label class="field" id="case-bug-field" hidden>Bug ID<input name="bugId" maxlength="100" placeholder="Ví dụ: BUG-001"></label>
+        <p id="case-status-help" class="case-status-help full" aria-live="polite">Chọn trạng thái sau khi thử ca này.</p>
+        <label class="field full">Kết quả thực tế / Lý do bị chặn<textarea name="actual" rows="3" maxlength="3000" placeholder="Mô tả điều bạn quan sát được."></textarea></label>
+        <label class="field full">Bằng chứng<textarea name="evidence" rows="2" maxlength="1500" placeholder="Ví dụ: minh-chung.png hoặc đường dẫn ảnh."></textarea></label>
+      </div>
+      <p id="case-error" class="error" role="alert"></p>
+      <div class="form-actions">
+        <button type="submit">Lưu kết quả</button>
+        <button type="submit" value="next" class="primary">Lưu và mở ca tiếp theo</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Danh sách đồng hồ yêu thích tại AUREL.">
+  <meta name="theme-color" content="#087b6a"><title>Sản phẩm yêu thích | AUREL</title>
+  <link rel="stylesheet" href="storefront.css">
+  <script defer src="store.js"></script><script defer src="storefront.js"></script>
+</head>
+<body>
+  <div id="site-header-root"></div>
+  <main class="page-shell wrap">
+    <nav class="breadcrumb" aria-label="Đường dẫn">
+      <a href="home.html">Trang chủ</a><span>/</span><span>Yêu thích</span>
+    </nav>
+    <div class="page-head">
+      <div>
+        <h1>Danh sách yêu thích</h1>
+        <p>Lưu các thiết kế đồng hồ bạn quan tâm để dễ dàng xem lại hoặc thêm vào giỏ hàng khi còn bán.</p>
+      </div>
+      <a class="button secondary small" href="home.html#san-pham">← Khám phá thêm</a>
+    </div>
+    <div id="wishlist-feedback" aria-live="polite"></div>
+    <div id="wishlist-root">
+      <p class="notice">Đang tải danh sách yêu thích…</p>
+    </div>
+  </main>
+  <div id="site-footer-root"></div>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const SF = window.AurelStorefront;
+      SF.initShell({ activeNav: 'wishlist' });
+
+      const root = document.getElementById('wishlist-root');
+      const feedback = document.getElementById('wishlist-feedback');
+
+      function showNotice(type, html) {
+        feedback.innerHTML = html ? `<div class="notice ${type}" data-testid="wishlist-feedback">${html}</div>` : '';
+      }
+
+      function render() {
+        const ids = SF.readWishlist();
+        if (!ids.length) {
+          root.innerHTML = `
+            <div class="empty-state" data-testid="wishlist-empty">
+              <h2>Chưa có sản phẩm yêu thích</h2>
+              <p>Nhấn biểu tượng trái tim trên bất kỳ chiếc đồng hồ nào để lưu vào danh sách yêu thích của bạn.</p>
+              <div class="actions">
+                <a class="button" href="home.html#san-pham">Khám phá bộ sưu tập</a>
+              </div>
+            </div>`;
+          return;
+        }
+
+        const db = SF.readStore(false);
+        const cards = ids.map(pid => {
+          const p = db.products.find(x => x.id === pid);
+          if (!p) {
+            return `
+              <article class="shop-card" data-testid="wishlist-item-${SF.esc(pid)}">
+                <div class="shop-card-body">
+                  <small>Không còn tồn tại</small>
+                  <h3>Sản phẩm (${SF.esc(pid)})</h3>
+                  <p class="field-hint">Sản phẩm này không còn trong dữ liệu cửa hàng.</p>
+                  <div class="shop-card-actions">
+                    <button type="button" class="btn danger small" data-remove-wish="${SF.esc(pid)}">Xóa</button>
+                  </div>
+                </div>
+              </article>`;
+          }
+          const img = SF.resolveProductImage(p);
+          const url = `product.html?id=${encodeURIComponent(p.id)}`;
+          const canBuy = p.active && p.stock > 0;
+          const statusText = !p.active ? 'Ngừng kinh doanh' : p.stock > 0 ? `Còn ${p.stock} chiếc` : 'Hết hàng';
+          return `
+            <article class="shop-card" data-testid="wishlist-item-${SF.esc(p.id)}">
+              <a class="shop-card-img" href="${url}">
+                <span class="shop-card-tag">${SF.esc(p.brand)}</span>
+                <img src="${SF.esc(img.src)}" data-fallback="${SF.esc(img.fallback)}" alt="${SF.esc(img.alt)}" loading="lazy">
+              </a>
+              <div class="shop-card-body">
+                <small>${SF.esc(p.type)} · ${statusText}</small>
+                <h3><a href="${url}">${SF.esc(p.name)}</a></h3>
+                <div class="shop-card-price">${SF.money(p.price)}</div>
+                <div class="shop-card-actions">
+                  <button type="button" class="btn small" data-wish-add-cart="${SF.esc(p.id)}" data-testid="wish-add-cart-${SF.esc(p.id)}" ${canBuy ? '' : 'disabled'}>
+                    ${canBuy ? 'Thêm giỏ' : !p.active ? 'Ngừng bán' : 'Hết hàng'}
+                  </button>
+                  <a class="btn secondary small" href="${url}">Chi tiết</a>
+                  <button type="button" class="btn danger small" data-remove-wish="${SF.esc(p.id)}" data-testid="wish-remove-${SF.esc(p.id)}">Bỏ thích</button>
+                </div>
+              </div>
+            </article>`;
+        }).join('');
+
+        root.innerHTML = `<div class="cards-grid" data-testid="wishlist-grid">${cards}</div>`;
+      }
+
+      root.addEventListener('click', e => {
+        const rem = e.target.closest('[data-remove-wish]');
+        if (rem) {
+          SF.removeFromWishlist(rem.dataset.removeWish);
+          showNotice('success', 'Đã xóa sản phẩm khỏi danh sách yêu thích.');
+          render();
+          return;
+        }
+        const add = e.target.closest('[data-wish-add-cart]');
+        if (add) {
+          try {
+            const res = SF.addToCart(add.dataset.wishAddCart, 1);
+            showNotice('success', `Đã thêm <strong>${SF.esc(res.product.name)}</strong> vào giỏ hàng. <a href="cart.html" style="text-decoration:underline;font-weight:600;margin-left:6px">Mở giỏ hàng →</a>`);
+          } catch (err) {
+            showNotice('error', SF.esc(err.message));
+          }
+        }
+      });
+
+      window.addEventListener('storage', e => {
+        if (e.key === SF.KEYS.wishlist || e.key === SF.KEYS.store) render();
+      });
+
+      render();
+    });
+  </script>
+</body>
+</html>

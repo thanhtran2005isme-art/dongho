@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Lịch sử đơn hàng tài khoản khách và tra cứu đơn vãng lai tại AUREL.">
+  <meta name="theme-color" content="#087b6a"><title>Đơn hàng của tôi | AUREL</title>
+  <link rel="stylesheet" href="storefront.css">
+  <script defer src="store.js"></script><script defer src="storefront.js"></script>
+</head>
+<body>
+  <div id="site-header-root"></div>
+  <main class="page-shell wrap">
+    <nav class="breadcrumb" aria-label="Đường dẫn">
+      <a href="home.html">Trang chủ</a><span>/</span><span>Đơn hàng</span>
+    </nav>
+    <div class="page-head">
+      <div>
+        <h1>Đơn hàng của bạn</h1>
+        <p>Theo dõi trạng thái xử lý từ cửa hàng (Nháp → Đã xác nhận / Đã hủy) với đơn giá lịch sử được giữ nguyên.</p>
+      </div>
+      <a class="button secondary small" href="home.html#san-pham">Khám phá bộ sưu tập</a>
+    </div>
+    <div class="notice" data-testid="local-access-limit-note">
+      <strong>Giới hạn kiểm soát quyền cục bộ:</strong> Website chạy hoàn toàn trên trình duyệt (<code>localStorage</code>/<code>sessionStorage</code>, không có server). Giao diện chỉ hiển thị đơn gắn với tài khoản đang đăng nhập hoặc đơn vãng lai vừa đặt/đối chiếu đúng trong phiên, nhưng cơ chế này chỉ là mô phỏng phía client — người dùng có quyền mở DevTools trên máy vẫn có thể xem dữ liệu lưu trong trình duyệt.
+    </div>
+    <div id="orders-root" aria-live="polite">
+      <p class="notice">Đang tải danh sách đơn hàng…</p>
+    </div>
+  </main>
+  <div id="site-footer-root"></div>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const SF = window.AurelStorefront;
+      SF.initShell({ activeNav: 'orders' });
+
+      const root = document.getElementById('orders-root');
+
+      function orderTableHtml(orders) {
+        return `
+          <div class="table-scroll">
+            <table class="data-table" data-testid="orders-table">
+              <thead>
+                <tr>
+                  <th>Mã đơn</th>
+                  <th>Ngày đặt</th>
+                  <th>Sản phẩm</th>
+                  <th class="num">Tổng tiền</th>
+                  <th>Trạng thái</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${orders.map(o => {
+                  const st = SF.statusMeta(o.status);
+                  const qty = o.items.reduce((s, i) => s + i.quantity, 0);
+                  return `
+                    <tr data-testid="order-row-${SF.esc(o.code)}">
+                      <td><a class="order-code-link" href="order-detail.html?id=${encodeURIComponent(o.id)}" aria-label="Xem đơn ${SF.esc(o.code)}"><strong>${SF.esc(o.code)}</strong></a></td>
+                      <td>${SF.esc(SF.formatDate(o.createdAt))}</td>
+                      <td>${SF.esc(o.items[0]?.name || '—')}${o.items.length > 1 ? ` và ${o.items.length - 1} mẫu khác` : ''} (${qty} chiếc)</td>
+                      <td class="num"><strong>${SF.money(o.total)}</strong></td>
+                      <td><span class="status-badge ${st.cls}" data-testid="order-status-${SF.esc(o.code)}">${SF.esc(st.label)}</span></td>
+                      <td><a class="btn secondary small" href="order-detail.html?id=${encodeURIComponent(o.id)}" data-testid="order-detail-link-${SF.esc(o.code)}">Xem chi tiết</a></td>
+                    </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>`;
+      }
+
+      function render() {
+        const customer = SF.getCurrentCustomer();
+        let visibleOrders;
+        try { visibleOrders = SF.getVisibleOrdersForCurrentUser(); } catch { SF.renderStoreError(root); return; }
+
+        if (customer) {
+          if (!visibleOrders.length) {
+            root.innerHTML = `
+              <div class="empty-state" data-testid="orders-empty">
+                <h2>Bạn chưa có đơn hàng nào</h2>
+                <p>Tài khoản <strong>${SF.esc(customer.email)}</strong> chưa phát sinh đơn hàng nào trên trình duyệt này.</p>
+                <div class="actions">
+                  <a class="button" href="home.html#san-pham">Khám phá đồng hồ</a>
+                  <a class="button secondary" href="account.html">Về hồ sơ tài khoản</a>
+                </div>
+              </div>`;
+            return;
+          }
+          root.innerHTML = `
+            <p class="field-hint" style="margin-bottom:14px">Hiển thị <strong>${visibleOrders.length}</strong> đơn hàng gắn với tài khoản <strong>${SF.esc(customer.name)}</strong> (${SF.esc(customer.email)}).</p>
+            ${orderTableHtml(visibleOrders)}
+          `;
+          return;
+        }
+
+        // Chế độ khách vãng lai: KHÔNG liệt kê toàn bộ đơn cửa hàng.
+        // Chỉ hiển thị đơn vừa đặt trong phiên này (nếu có) + biểu mẫu đối chiếu mã đơn và SĐT/email.
+        const sessionOrdersSection = visibleOrders.length
+          ? `<section style="margin-bottom:28px">
+              <h2 style="font-size:30px;margin-bottom:12px">Đơn đã đặt trong phiên này</h2>
+              ${orderTableHtml(visibleOrders)}
+            </section>`
+          : `<div class="notice" data-testid="guest-no-session-orders">Bạn chưa đăng nhập và chưa có đơn vãng lai nào trong phiên trình duyệt này. Hệ thống không liệt kê danh sách đơn của các khách hàng khác.</div>`;
+
+        root.innerHTML = `
+          ${sessionOrdersSection}
+          <div class="split-layout">
+            <section class="surface">
+              <h2 style="font-size:30px;margin-bottom:8px">Tra cứu đơn hàng khách vãng lai</h2>
+              <p class="field-hint" style="margin-bottom:18px">Nhập chính xác <strong>Mã đơn</strong> và <strong>Số điện thoại hoặc Email</strong> đã dùng khi đặt hàng để xem đơn của bạn.</p>
+              <form id="guest-lookup-form" class="form-stack" novalidate data-testid="guest-lookup-form">
+                <div class="field-group">
+                  <label for="lk-code">Mã đơn hàng *</label>
+                  <input id="lk-code" name="orderCode" type="text" required placeholder="Ví dụ: DH0001">
+                </div>
+                <div class="field-group">
+                  <label for="lk-contact">Số điện thoại hoặc Email đặt hàng *</label>
+                  <input id="lk-contact" name="contact" type="text" required placeholder="0901234567 hoặc khach@example.com">
+                </div>
+                <p id="lookup-error" class="form-error" role="alert" data-testid="guest-lookup-error"></p>
+                <div>
+                  <button type="submit" class="button" data-testid="guest-lookup-btn">Tra cứu đơn hàng</button>
+                </div>
+              </form>
+            </section>
+            <aside class="surface-soft">
+              <h2 style="font-size:28px;margin-bottom:10px">Bạn đã có tài khoản?</h2>
+              <p class="field-hint" style="margin-bottom:18px">Đăng nhập tài khoản khách để xem nhanh toàn bộ lịch sử đơn hàng đã liên kết với tài khoản của bạn.</p>
+              <div class="detail-actions">
+                <a class="button" href="login.html?next=orders.html">Đăng nhập khách</a>
+                <a class="button secondary" href="register.html">Đăng ký mới</a>
+              </div>
+            </aside>
+          </div>
+        `;
+
+        document.getElementById('guest-lookup-form').addEventListener('submit', e => {
+          e.preventDefault();
+          const errEl = document.getElementById('lookup-error');
+          errEl.textContent = '';
+          try {
+            const found = SF.lookupGuestOrder(
+              e.target.elements.orderCode.value,
+              e.target.elements.contact.value
+            );
+            location.href = `order-detail.html?id=${encodeURIComponent(found.id)}`;
+          } catch (err) {
+            errEl.textContent = err.message;
+          }
+        });
+      }
+
+      window.addEventListener('storage', e => {
+        if (e.key === SF.KEYS.store || e.key === SF.KEYS.session) render();
+      });
+
+      render();
+    });
+  </script>
+</body>
+</html>

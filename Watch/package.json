@@ -1,0 +1,20 @@
+{
+  "name": "aurel-watch-qa",
+  "version": "1.4.0",
+  "private": true,
+  "description": "AUREL — giao diện cửa hàng và bộ thực hành kiểm thử local",
+  "scripts": {
+    "test": "node --test tests/store.test.js tests/demo-data.test.js tests/storefront.test.js",
+    "check": "node --check app.js && node --check store.js && node --check storefront.js && node --check qa-runner.js && node --check qa.js && node --check qa-cases.js && node --check home.js && node --check scripts/test-server.cjs && node --check tests/storefront.test.js && node --check tests/e2e/chrono.spec.js && node --check tests/e2e/customer-flow.spec.js && node --check tests/e2e/qa.spec.js && node --check tests/e2e/qa-load.spec.js && node --check tests/e2e/qa-smoke.spec.js && node --check tests/e2e/qa-portfolio.spec.js && node --check tests/e2e/home-account.spec.js && node --check tests/e2e/visual.spec.js && node --check tests/e2e/flaticon.spec.js && node --check demo-data.js && node --check lab.js && node --check tests/e2e/lab.spec.js && node --check icons.js && node --check scripts/build-testing-kit.cjs && node --check scripts/build-jmeter-plan.cjs && node --check scripts/capture-preview.cjs && node --check tests/e2e/brand.spec.js && node --check scripts/capture-aurel.cjs && node --check scripts/build-jmeter-performance.cjs && node --check scripts/build-selenium-ide.cjs",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "report": "playwright show-report",
+    "serve:test": "node scripts/test-server.cjs",
+    "start": "node scripts/test-server.cjs",
+    "build:jmeter": "node scripts/build-jmeter-performance.cjs",
+    "build:ide": "node scripts/build-selenium-ide.cjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.0"
+  }
+}

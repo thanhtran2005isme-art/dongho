@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Giới thiệu thương hiệu AUREL và bối cảnh đồ án thực hành kiểm thử phần mềm.">
+  <meta name="theme-color" content="#087b6a"><title>Giới thiệu | AUREL</title>
+  <link rel="stylesheet" href="storefront.css">
+  <script defer src="store.js"></script><script defer src="storefront.js"></script>
+</head>
+<body>
+  <div id="site-header-root"></div>
+  <main class="page-shell wrap">
+    <nav class="breadcrumb" aria-label="Đường dẫn">
+      <a href="home.html">Trang chủ</a><span>/</span><span>Giới thiệu</span>
+    </nav>
+
+    <section class="editorial-hero" aria-labelledby="about-title">
+      <div class="editorial-hero-copy">
+        <span class="pill" style="align-self:flex-start;margin-bottom:14px">AUREL · ĐỒ ÁN KIỂM THỬ</span>
+        <h1 id="about-title">Vẻ đẹp tối giản.<br><em>Dữ liệu minh bạch.</em></h1>
+        <p style="color:var(--muted);font-size:14px;line-height:1.85;margin-bottom:20px">
+          AUREL là website mô phỏng cửa hàng đồng hồ được xây dựng bằng HTML, CSS và JavaScript thuần nhằm phục vụ đồ án học phần kiểm thử phần mềm (kiểm thử thủ công, Katalon Studio, Apache JMeter và Playwright).
+        </p>
+        <div class="detail-actions" style="margin-bottom:0">
+          <a class="button" href="home.html#san-pham">Khám phá bộ sưu tập</a>
+          <a class="button secondary" href="qa.html">Mở không gian QA</a>
+        </div>
+      </div>
+      <div class="editorial-hero-photo">
+        <img src="assets/images/aurel-hero.png" width="1536" height="1024" alt="Ảnh minh họa AI đồng hồ mặt xanh ngọc AUREL">
+        <span style="position:absolute;bottom:14px;right:14px;background:#fffffff0;border:1px solid #dce6e0;padding:5px 10px;border-radius:4px;font-size:11px;color:#315e4d">Ảnh minh họa do AI tạo</span>
+      </div>
+    </section>
+
+    <section class="info-grid-3" aria-label="Kiến trúc và nguyên tắc dự án">
+      <article class="surface">
+        <h2 style="font-size:28px;margin-bottom:10px">Kiến trúc thuần trình duyệt</h2>
+        <p style="font-size:14px;color:var(--muted);margin:0">
+          Toàn bộ trang khách, trang quản lý cửa hàng và sổ theo dõi QA vận hành trực tiếp trên trình duyệt thông qua <code>localStorage</code> và <code>sessionStorage</code>, không sử dụng backend hoặc cơ sở dữ liệu MySQL.
+        </p>
+      </article>
+      <article class="surface">
+        <h2 style="font-size:28px;margin-bottom:10px">Liên thông khách &amp; quản lý</h2>
+        <p style="font-size:14px;color:var(--muted);margin:0">
+          Đơn hàng khách đặt trên storefront được tạo ở trạng thái <strong>Nháp</strong> (chưa trừ tồn kho) và hiển thị ngay trong <a href="index.html" style="color:var(--jade);text-decoration:underline">Quản lý cửa hàng</a> để xác nhận bán, trừ kho hoặc hủy hoàn kho một lần.
+        </p>
+      </article>
+      <article class="surface">
+        <h2 style="font-size:28px;margin-bottom:10px">Trung thực phạm vi đồ án</h2>
+        <p style="font-size:14px;color:var(--muted);margin:0">
+          Website không công bố địa chỉ showroom, hotline doanh nghiệp, chính sách bảo hành chính hãng hay quan hệ đối tác thương mại chưa có thật. Các hãng như Seiko, Citizen, Casio, Orient, Tissot chỉ dùng làm dữ liệu mẫu cho bài kiểm thử.
+        </p>
+      </article>
+    </section>
+
+    <section class="surface-soft" aria-labelledby="transparency-title">
+      <h2 id="transparency-title" style="font-size:32px;margin-bottom:12px">Minh bạch hình ảnh &amp; giới hạn kỹ thuật</h2>
+      <ul style="margin:0;padding-left:20px;font-size:14px;color:var(--muted);display:flex;flex-direction:column;gap:8px">
+        <li><strong>Hình ảnh minh họa AI:</strong> Các ảnh đồng hồ mặc định trong <code>assets/images/</code> do AI tạo phục vụ nhận diện AUREL, không phải ảnh chính thức của sản phẩm hãng. Xem chi tiết tại <a href="docs/ASSETS.md" style="color:var(--jade);text-decoration:underline">Nguồn ảnh &amp; nhận diện</a>.</li>
+        <li><strong>Đặt hàng &amp; xác thực mô phỏng:</strong> Không thu thập thông tin thẻ thanh toán hay thực hiện giao dịch tài chính. Tài khoản khách và phân tách đơn hàng chỉ mô phỏng cục bộ trên trình duyệt.</li>
+        <li><strong>Phạm vi JMeter:</strong> Vì website không có máy chủ ứng dụng backend, kế hoạch Apache JMeter chỉ đo thời gian và tính toàn vẹn HTTP của các tệp tĩnh (HTML, CSS, JS, CSV).</li>
+      </ul>
+      <div class="detail-actions" style="margin-top:20px;margin-bottom:0">
+        <a class="button secondary" href="contact.html">Gửi yêu cầu liên hệ mô phỏng</a>
+        <a class="button secondary" href="lab.html">Phòng thực hành QA</a>
+      </div>
+    </section>
+  </main>
+  <div id="site-footer-root"></div>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      window.AurelStorefront.initShell({ activeNav: 'about' });
+    });
+  </script>
+</body>
+</html>

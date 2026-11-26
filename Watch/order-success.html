@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Xác nhận đặt hàng thành công tại AUREL.">
+  <meta name="theme-color" content="#087b6a"><title>Đặt hàng thành công | AUREL</title>
+  <link rel="stylesheet" href="storefront.css">
+  <script defer src="store.js"></script><script defer src="storefront.js"></script>
+</head>
+<body>
+  <div id="site-header-root"></div>
+  <main class="page-shell wrap">
+    <nav class="breadcrumb" aria-label="Đường dẫn">
+      <a href="home.html">Trang chủ</a><span>/</span><span>Kết quả đặt hàng</span>
+    </nav>
+    <div id="success-root" aria-live="polite">
+      <p class="notice">Đang kiểm tra đơn hàng…</p>
+    </div>
+  </main>
+  <div id="site-footer-root"></div>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const SF = window.AurelStorefront;
+      SF.initShell({});
+
+      const root = document.getElementById('success-root');
+      const orderId = SF.getParam('id');
+
+      if (!orderId) {
+        document.title = 'Không tìm thấy đơn hàng | AUREL';
+        root.innerHTML = `
+          <div class="empty-state" data-testid="order-success-invalid">
+            <h1>Chưa có đơn hàng hợp lệ</h1>
+            <p>Trang này chỉ hiển thị sau khi bạn hoàn tất bước đặt hàng. Tải lại hoặc truy cập trực tiếp sẽ không tạo đơn mới.</p>
+            <div class="actions">
+              <a class="button" href="home.html#san-pham">Khám phá bộ sưu tập</a>
+              <a class="button secondary" href="orders.html">Tra cứu / Lịch sử đơn hàng</a>
+            </div>
+          </div>`;
+        return;
+      }
+
+      let db;
+      try { db = SF.readStore(false); } catch { db = null; }
+      const order = db?.orders?.find(o => o.id === orderId) || null;
+      const last = SF.getLastOrder();
+      const allowed = order && (SF.canViewOrder(order) || (last && last.orderId === order.id && (!order.customerAccountId || order.customerAccountId === SF.getCurrentCustomer()?.id)));
+
+      if (!order || !allowed) {
+        document.title = 'Đơn hàng không khả dụng | AUREL';
+        root.innerHTML = `
+          <div class="empty-state" data-testid="order-success-invalid">
+            <h1>Không tìm thấy đơn hàng hợp lệ</h1>
+            <p>Đơn hàng không tồn tại hoặc không thuộc phiên/tài khoản khách hiện tại của bạn.</p>
+            <div class="actions">
+              <a class="button" href="orders.html">Xem lịch sử / Tra cứu đơn</a>
+              <a class="button secondary" href="home.html#san-pham">Khám phá bộ sưu tập</a>
+            </div>
+          </div>`;
+        return;
+      }
+
+      const st = SF.statusMeta(order.status);
+      const customer = db.customers.find(c => c.id === order.customerId);
+      const contactName = order.shipping?.name || customer?.name || '—';
+      const contactPhone = order.shipping?.phone || customer?.phone || '—';
+      const contactEmail = order.shipping?.email || customer?.email || '—';
+      const contactAddr = order.shipping?.address || customer?.address || '—';
+
+      root.innerHTML = `
+        <section class="surface" style="max-width:860px;margin:0 auto" data-testid="order-success-card">
+          <div class="notice success">
+            <strong>Đặt hàng mô phỏng thành công!</strong> Đơn hàng của bạn đã được ghi nhận vào hệ thống cửa hàng ở trạng thái <strong>${SF.esc(st.label)}</strong>. Tải lại trang này sẽ không tạo thêm đơn hàng mới.
+          </div>
+          <div class="page-head" style="margin-bottom:20px;padding-bottom:14px">
+            <div>
+              <h1 data-testid="success-order-code">Đơn hàng ${SF.esc(order.code)}</h1>
+              <p>Tạo lúc ${SF.esc(SF.formatDate(order.createdAt))}</p>
+            </div>
+            <span class="status-badge ${st.cls}" data-testid="success-order-status">${SF.esc(st.label)}</span>
+          </div>
+
+          <div class="spec-list" style="margin-bottom:22px">
+            <div class="spec-item"><small>Người nhận</small><strong data-testid="success-customer-name">${SF.esc(contactName)}</strong></div>
+            <div class="spec-item"><small>Số điện thoại</small><strong>${SF.esc(contactPhone)}</strong></div>
+            <div class="spec-item"><small>Email</small><strong>${SF.esc(contactEmail)}</strong></div>
+            <div class="spec-item"><small>Địa chỉ giao</small><strong>${SF.esc(contactAddr)}</strong></div>
+          </div>
+          ${order.note ? `<p class="notice"><strong>Ghi chú:</strong> ${SF.esc(order.note)}</p>` : ''}
+
+          <div class="table-scroll" style="margin-bottom:18px">
+            <table class="data-table">
+              <thead>
+                <tr><th>Sản phẩm</th><th>Mã</th><th class="num">Đơn giá</th><th class="num">SL</th><th class="num">Thành tiền</th></tr>
+              </thead>
+              <tbody>
+                ${order.items.map(i => `
+                  <tr>
+                    <td><strong>${SF.esc(i.name)}</strong></td>
+                    <td>${SF.esc(i.code)}</td>
+                    <td class="num">${SF.money(i.price)}</td>
+                    <td class="num">${i.quantity}</td>
+                    <td class="num"><strong>${SF.money(i.price * i.quantity)}</strong></td>
+                  </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="summary-row total" style="margin-bottom:22px">
+            <span>Tổng cộng</span>
+            <strong data-testid="success-order-total">${SF.money(order.total)}</strong>
+          </div>
+
+          <div class="detail-actions">
+            <a class="button" href="order-detail.html?id=${encodeURIComponent(order.id)}" data-testid="view-order-detail-link">Xem chi tiết đơn hàng</a>
+            <a class="button secondary" href="orders.html">Lịch sử đơn hàng</a>
+            <a class="button secondary" href="home.html#san-pham">Tiếp tục khám phá</a>
+          </div>
+        </section>
+      `;
+    });
+  </script>
+</body>
+</html>

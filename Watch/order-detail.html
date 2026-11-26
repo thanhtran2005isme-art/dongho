@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Chi tiết đơn hàng khách hàng tại AUREL.">
+  <meta name="theme-color" content="#087b6a"><title>Chi tiết đơn hàng | AUREL</title>
+  <link rel="stylesheet" href="storefront.css">
+  <script defer src="store.js"></script><script defer src="storefront.js"></script>
+</head>
+<body>
+  <div id="site-header-root"></div>
+  <main class="page-shell wrap">
+    <nav class="breadcrumb" aria-label="Đường dẫn">
+      <a href="home.html">Trang chủ</a><span>/</span>
+      <a href="orders.html">Đơn hàng</a><span>/</span>
+      <span id="crumb-order">Chi tiết đơn</span>
+    </nav>
+    <div id="detail-root" aria-live="polite">
+      <p class="notice">Đang tải chi tiết đơn hàng…</p>
+    </div>
+  </main>
+  <div id="site-footer-root"></div>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const SF = window.AurelStorefront;
+      SF.initShell({ activeNav: 'orders' });
+
+      const root = document.getElementById('detail-root');
+      const crumb = document.getElementById('crumb-order');
+      const orderId = SF.getParam('id');
+
+      function render() {
+        let db;
+        try { db = SF.readStore(false); } catch { db = null; }
+        const order = db?.orders?.find(o => o.id === orderId) || null;
+
+        if (!order || !SF.canViewOrder(order)) {
+          document.title = 'Không tìm thấy đơn hàng | AUREL';
+          crumb.textContent = 'Không tìm thấy';
+          root.innerHTML = `
+            <div class="empty-state" data-testid="order-detail-denied">
+              <h1>Không tìm thấy đơn hàng</h1>
+              <p>Đơn hàng không tồn tại hoặc bạn không có quyền xem đơn hàng này trong tài khoản/phiên hiện tại.</p>
+              <div class="actions">
+                <a class="button" href="orders.html">Về danh sách / Tra cứu đơn</a>
+                <a class="button secondary" href="login.html">Đăng nhập tài khoản khách</a>
+              </div>
+            </div>
+            <p class="field-hint" style="text-align:center;max-width:68ch;margin:16px auto 0">Lưu ý: Kiểm soát ẩn đơn giữa các tài khoản được mô phỏng phía giao diện với <code>localStorage</code>, không thay thế phân quyền máy chủ production.</p>`;
+          return;
+        }
+
+        document.title = `Đơn hàng ${order.code} | AUREL`;
+        crumb.textContent = order.code;
+        const st = SF.statusMeta(order.status);
+        const customer = db.customers.find(c => c.id === order.customerId);
+        const contactName = order.shipping?.name || customer?.name || '—';
+        const contactPhone = order.shipping?.phone || customer?.phone || '—';
+        const contactEmail = order.shipping?.email || customer?.email || '—';
+        const contactAddr = order.shipping?.address || customer?.address || '—';
+
+        const statusExplain = order.status === 'draft'
+          ? 'Đơn đang ở trạng thái Nháp (chờ cửa hàng kiểm tra tồn kho và xác nhận). Tồn kho chưa bị trừ.'
+          : order.status === 'confirmed'
+            ? `Đơn đã được cửa hàng xác nhận${order.confirmedAt ? ' lúc ' + SF.formatDate(order.confirmedAt) : ''} và đã trừ tồn kho.`
+            : 'Đơn hàng đã bị hủy.';
+
+        root.innerHTML = `
+          <div class="page-head">
+            <div>
+              <h1 data-testid="detail-order-code">Đơn hàng ${SF.esc(order.code)}</h1>
+              <p>Đặt lúc ${SF.esc(SF.formatDate(order.createdAt))}</p>
+            </div>
+            <span class="status-badge ${st.cls}" data-testid="detail-order-status">${SF.esc(st.label)}</span>
+          </div>
+
+          <div class="notice ${order.status === 'confirmed' ? 'success' : order.status === 'cancelled' ? 'error' : 'warn'}" data-testid="detail-status-explain">
+            ${SF.esc(statusExplain)}
+          </div>
+
+          <div class="split-layout">
+            <section class="surface">
+              <h2 style="font-size:28px;margin-bottom:14px">Sản phẩm trong đơn</h2>
+              <p class="field-hint" style="margin-bottom:14px">Đơn giá được giữ cố định theo thời điểm đặt hàng ngay cả khi cửa hàng thay đổi giá bán về sau.</p>
+              <div class="table-scroll">
+                <table class="data-table" data-testid="detail-items-table">
+                  <thead>
+                    <tr>
+                      <th>Sản phẩm</th>
+                      <th>Mã</th>
+                      <th class="num">Đơn giá</th>
+                      <th class="num">SL</th>
+                      <th class="num">Thành tiền</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${order.items.map(i => `
+                      <tr>
+                        <td><a href="product.html?id=${encodeURIComponent(i.productId)}" style="font-weight:600;color:var(--jade)">${SF.esc(i.name)}</a></td>
+                        <td>${SF.esc(i.code)}</td>
+                        <td class="num" data-testid="detail-item-price-${SF.esc(i.productId)}">${SF.money(i.price)}</td>
+                        <td class="num">${i.quantity}</td>
+                        <td class="num"><strong>${SF.money(i.price * i.quantity)}</strong></td>
+                      </tr>`).join('')}
+                  </tbody>
+                </table>
+              </div>
+              <div class="summary-row total" style="margin-top:16px">
+                <span>Tổng thanh toán</span>
+                <strong data-testid="detail-order-total">${SF.money(order.total)}</strong>
+              </div>
+            </section>
+            <aside class="surface-soft">
+              <h2 style="font-size:28px;margin-bottom:14px">Thông tin nhận hàng</h2>
+              <div class="spec-list" style="grid-template-columns:1fr">
+                <div class="spec-item"><small>Người nhận</small><strong data-testid="detail-customer-name">${SF.esc(contactName)}</strong></div>
+                <div class="spec-item"><small>Số điện thoại</small><strong>${SF.esc(contactPhone)}</strong></div>
+                <div class="spec-item"><small>Email</small><strong>${SF.esc(contactEmail)}</strong></div>
+                <div class="spec-item"><small>Địa chỉ</small><strong>${SF.esc(contactAddr)}</strong></div>
+                ${order.note ? `<div class="spec-item"><small>Ghi chú</small><strong>${SF.esc(order.note)}</strong></div>` : ''}
+              </div>
+              <div class="form-stack">
+                <a class="button secondary" href="orders.html">← Quay lại lịch sử đơn hàng</a>
+                <a class="button secondary" href="home.html#san-pham">Tiếp tục mua sắm</a>
+              </div>
+              <p class="field-hint" style="margin-top:16px">Kiểm soát hiển thị đơn hàng theo tài khoản/phiên được thực hiện cục bộ bằng <code>localStorage</code>/<code>sessionStorage</code> phục vụ đồ án kiểm thử.</p>
+            </aside>
+          </div>
+        `;
+      }
+
+      window.addEventListener('storage', e => {
+        if (e.key === SF.KEYS.store || e.key === SF.KEYS.session) render();
+      });
+
+      render();
+    });
+  </script>
+</body>
+</html>

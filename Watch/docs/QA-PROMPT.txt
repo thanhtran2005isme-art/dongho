@@ -1,0 +1,33 @@
+PROMPT CẢI THIỆN TRANG KIỂM THỬ CHRONO
+
+Bạn là lập trình viên frontend kiêm tester. Hãy cải thiện qa.html, qa.css
+và qa.js của đồ án quản lý cửa hàng đồng hồ CHRONO. Người dùng chính là
+sinh viên mới học kiểm thử, cần tự thực hiện được một ca và giải thích
+kết quả khi demo.
+
+1. Mở trang là thấy hai lựa chọn: tự thực hiện một ca thủ công hoặc chạy
+   24 ca nghiệp vụ tự động. Mỗi lựa chọn có nút rõ ràng và mô tả ngắn.
+   Bộ tự động cho phép chạy toàn bộ hoặc chọn nhóm, xem Pass/Fail, lọc
+   kết quả, so sánh các lần chạy cùng nhóm và xuất JSON. Giữ nhóm 12 ca
+   cơ bản để thực hành demo Fail và đọc lại lịch sử đã lưu.
+2. Dùng TC-064 (tìm đồng hồ bằng từ khóa không tồn tại) làm ca tập đầu tiên.
+   Người học mở trang chủ trong tab mới, thử tìm kiếm, đối chiếu thông báo
+   với kết quả mong đợi, rồi quay lại ghi kết quả. Giữ lối mở TC-003 cho
+   người muốn kiểm thử đăng nhập và nhắc đăng xuất trước khi thực hiện.
+3. Khi mở một ca, trình bày điều kiện, dữ liệu, bước thực hiện và kết quả
+   mong đợi theo thứ tự đọc. Mở đúng khu vực cần kiểm thử trong tab mới.
+   Giải thích trạng thái bằng tiếng Việt. Pass và Fail cần ghi kết quả
+   thực tế và bằng chứng. Fail cần thêm mã lỗi, Blocked cần ghi lý do.
+   Cho phép lưu rồi mở ngay ca chưa chạy tiếp theo trong cùng đợt.
+4. Hiện đợt đang xem, số ca đã chạy (Pass + Fail) và danh sách ca gần nhau.
+   Gộp tạo đợt, thông tin, nhập và xuất báo cáo vào mục có thể mở khi cần.
+5. Giữ bộ 90 ca từ CSV, dữ liệu lưu trên trình duyệt, lịch sử tự động,
+   bộ lọc, sổ lỗi, truy vết, liên kết cũ và khả năng mở bằng Go Live
+   hoặc trực tiếp bằng file. Giữ HTML, CSS và JavaScript thuần. Thiết kế
+   tông đỏ CHRONO, đọc được trên điện thoại và dùng được bằng bàn phím.
+
+Tiêu chí nghiệm thu: mở TC-064 từ hướng dẫn, thử tìm kiếm trên trang chủ,
+ghi Pass có bằng chứng và chuyển sang ca chưa chạy. Tiến độ tăng đúng sau
+khi lưu. Ca đã lưu còn sau tải lại. Kiểm tra thêm Fail thiếu mã lỗi, nhập
+và xuất báo cáo, chạy toàn bộ 24 ca, chạy theo nhóm và bố cục trên điện thoại. Phân biệt
+kết quả kiểm thử tự động, ca mô phỏng và kết quả thủ công do người dùng nhập.

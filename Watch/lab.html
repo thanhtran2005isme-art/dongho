@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Phòng thực hành test design, AI, Katalon và JMeter cho đồ án AUREL">
+  <title>AUREL QA · Phòng thực hành</title>
+  <link rel="stylesheet" href="lab.css"><script defer src="lab.js"></script>
+</head>
+<body>
+  <header class="lab-header"><a class="wordmark" href="home.html">AUREL <span>/ QA WORKSPACE</span></a><nav aria-label="Không gian làm việc"><a href="index.html">Cửa hàng</a><a href="qa.html">Thực thi test</a><a href="qa-portfolio.html">Hồ sơ bảo vệ</a></nav></header>
+  <main class="lab-shell">
+    <div class="lab-intro"><div><h1>Từ yêu cầu đến<br>bằng chứng kiểm thử.</h1><p>Thực hành thiết kế ca, dùng AI có kiểm chứng và chuẩn bị demo bằng Katalon & JMeter trên chính web AUREL.</p></div><aside><strong>HTML · CSS · JavaScript</strong><p>Dữ liệu localStorage, chạy trên máy.<br>Không cần backend hoặc MySQL.</p><a href="qa.html">Mở sổ 90 test case</a></aside></div>
+    <div class="lab-workspace">
+      <div class="lab-tabs" role="tablist" aria-label="Nội dung thực hành" aria-orientation="vertical">
+        <button role="tab" id="tab-design" aria-controls="panel-design" aria-selected="true" tabindex="0" data-tab="design">Test design<span>Biên & phân vùng</span></button>
+        <button role="tab" id="tab-ai" aria-controls="panel-ai" aria-selected="false" tabindex="-1" data-tab="ai">AI hỗ trợ tester<span>Prompt có kiểm chứng</span></button>
+        <button role="tab" id="tab-katalon" aria-controls="panel-katalon" aria-selected="false" tabindex="-1" data-tab="katalon">Katalon Studio<span>Kiểm thử giao diện</span></button>
+        <button role="tab" id="tab-jmeter" aria-controls="panel-jmeter" aria-selected="false" tabindex="-1" data-tab="jmeter">Apache JMeter<span>HTTP & tải tài nguyên</span></button>
+        <button role="tab" id="tab-skill" aria-controls="panel-skill" aria-selected="false" tabindex="-1" data-tab="skill">Viết skill kiểm thử<span>Quy trình có thể lặp lại</span></button>
+        <button role="tab" id="tab-defense" aria-controls="panel-defense" aria-selected="false" tabindex="-1" data-tab="defense">Demo bảo vệ<span>Checklist & kịch bản</span></button>
+      </div>
+      <section class="lab-panel" role="tabpanel" id="panel-design" aria-labelledby="tab-design" tabindex="0">
+        <h2>Thiết kế test từ quy tắc thật</h2><p class="panel-lead">Ví dụ FR-03: giá bán là số nguyên VND lớn hơn 0. Một ca âm kiểm tra việc từ chối dữ liệu sai vẫn có thể có kết quả Pass.</p>
+        <div class="design-example"><div><h3>Thử một giá trị</h3><form id="boundary-form"><label for="boundary-value">Giá bán (VND)</label><div class="inline-controls"><input id="boundary-value" value="0" maxlength="40" inputmode="decimal"><button type="submit">Phân tích</button></div></form><p id="boundary-result" class="feedback" role="status"></p><small>Đây là công cụ học kỹ thuật thiết kế, không tự ghi kết quả vào sổ QA.</small></div><div class="boundary-cases"><h3>Bộ giá trị nên thử</h3><div><button data-value="-1">−1</button><button data-value="0">0</button><button data-value="1">1</button><button data-value="1.5">1.5</button><button data-value="abc">abc</button><button data-value="">Rỗng</button></div><p>Giá trị biên: 0 / 1. Phân vùng không hợp lệ: âm, thập phân, chữ và rỗng.</p></div></div>
+        <h3>Bốn kỹ thuật trong hồ sơ</h3><div class="method-list"><div><b>Phân vùng tương đương</b><span>TC-014–016 · Giá hợp lệ / sai định dạng.</span></div><div><b>Giá trị biên</b><span>TC-012–013 · Tên 100 và 101 ký tự.</span></div><div><b>Chuyển trạng thái</b><span>Nháp → xác nhận → hủy; kiểm tra tồn kho sau mỗi bước.</span></div><div><b>Bảng quyết định</b><span>Đúng/sai mật khẩu × tài khoản hoạt động/bị khóa.</span></div></div><a class="text-link" href="docs/TEST-DESIGN.md">Đọc phân tích test design</a>
+      </section>
+      <section class="lab-panel" role="tabpanel" id="panel-ai" aria-labelledby="tab-ai" tabindex="0" hidden>
+        <h2>AI đề xuất. Tester kiểm chứng.</h2><p class="panel-lead">Tạo prompt theo quy tắc nghiệp vụ rồi đưa vào ChatGPT/Codex. Công cụ dưới đây tạo văn bản mẫu; không gọi mô hình AI.</p>
+        <label for="ai-feature">Chức năng cần thiết kế test</label><select id="ai-feature"><option value="orders">Xác nhận đơn & tồn kho · FR-07</option><option value="products">Giá & mã sản phẩm · FR-03</option><option value="login">Đăng nhập & phiên · FR-01</option></select>
+        <label for="ai-prompt" class="spaced-label">Prompt có thể chỉnh sửa</label><textarea id="ai-prompt" rows="10"></textarea><div class="panel-actions"><button id="copy-prompt">Sao chép prompt</button><button id="save-prompt" class="secondary">Tải prompt .txt</button><span id="copy-status" role="status"></span></div>
+        <h3>Review đầu ra trước khi sử dụng</h3><ul class="read-list"><li>Có tiền điều kiện, dữ liệu cụ thể, bước và kết quả mong đợi không?</li><li>Có bỏ sót biên, trạng thái hoặc giả định web có API/MySQL không?</li><li>Ca có truy vết tới FR/NFR và kiểm tra hậu điều kiện không?</li><li>Không chấp nhận AI tự ghi Pass/Fail hoặc bịa ảnh/log.</li></ul><a class="text-link" href="docs/AI-PROVENANCE.md">Nguồn web & minh chứng sử dụng AI</a>
+      </section>
+      <section class="lab-panel" role="tabpanel" id="panel-katalon" aria-labelledby="tab-katalon" tabindex="0" hidden>
+        <h2>Kiểm thử giao diện với Katalon</h2><p class="panel-lead">Bộ 12 kịch bản Groovy đi qua giao diện thật: đăng nhập, sản phẩm, khách hàng, tồn kho và công cụ QA.</p>
+        <div class="tool-state"><strong>Trạng thái: Not Run trên Katalon</strong><span>Mã đã chuẩn bị. Cần chạy bằng Katalon Studio và lưu report của chính lần chạy.</span></div>
+        <ol class="instructions"><li>Chạy <code>npm start</code>, mở <code>http://127.0.0.1:5517</code>.</li><li>Tạo Web UI project trong Katalon Studio. Với mỗi file, tạo Test Case rồi dán mã vào <b>Script View</b>.</li><li>Tạo Test Suite, thêm 12 ca và chạy Chrome. Mỗi ca tự cô lập dữ liệu trong trình duyệt kiểm thử.</li><li>Lưu report, ảnh lỗi, thời gian và phiên bản công cụ. Trước khi chạy, đọc hướng dẫn về dữ liệu test.</li></ol>
+        <div id="katalon-cases" class="download-list"></div><div class="panel-actions"><a class="button" href="testing/katalon-scripts.zip" download>Tải cả 12 script</a><a href="docs/KATALON.md">Hướng dẫn Katalon</a><a href="qa.html#auto-section">Thử 24 ca nghiệp vụ trên web</a></div>
+      </section>
+      <section class="lab-panel" role="tabpanel" id="panel-jmeter" aria-labelledby="tab-jmeter" tabindex="0" hidden>
+        <h2>Đo HTTP với Apache JMeter</h2><p class="panel-lead">Kế hoạch tải cho trang HTML, CSS, JavaScript và CSV. Mỗi phản hồi được kiểm tra mã HTTP và nội dung mong đợi.</p>
+        <div class="scope-note"><strong>Phạm vi cần nói rõ khi bảo vệ</strong><p>JMeter không chạy JavaScript trong trình duyệt. Plan này không đo tốc độ tạo đơn, đăng nhập, localStorage hoặc truy vấn MySQL.</p></div>
+        <div class="load-profile"><label for="load-users">Số người dùng đồng thời<select id="load-users"><option>5</option><option selected>10</option><option>25</option></select></label><div><strong id="load-samples">400</strong><span>HTTP sample dự kiến · 8 request × 5 vòng / người</span></div></div>
+        <pre id="jmeter-command"></pre><div class="panel-actions"><a class="button" href="testing/jmeter/chrono-static.jmx" download>Tải test plan .jmx</a><a href="docs/JMETER.md">Cách chạy & đọc báo cáo</a></div>
+        <h3>Chỉ số cần trình bày từ report thật</h3><div class="method-list"><div><b>Error %</b><span>Lỗi request hoặc assertion. Mong đợi 0%, cần đối chiếu lần chạy.</span></div><div><b>p95 response time</b><span>95% mẫu có thời gian không vượt giá trị này.</span></div><div><b>Throughput</b><span>Số request/giây; luôn ghi cùng số thread và môi trường.</span></div></div><p class="muted">Chưa có kết quả JMeter được xác nhận trong phiên bản này. 400 là số mẫu cấu hình, không phải số ca đã Pass.</p>
+      </section>
+      <section class="lab-panel" role="tabpanel" id="panel-skill" aria-labelledby="tab-skill" tabindex="0" hidden>
+        <h2>Biến cách làm thành một skill QA</h2><p class="panel-lead">Skill là hướng dẫn có phạm vi, đầu vào, các bước và tiêu chí kết thúc. Tệp thực hành nằm ngay trong dự án.</p>
+        <pre>name: watch-qa
+Phạm vi: web AUREL, dữ liệu localStorage.
+Đầu vào: yêu cầu FR/NFR, mã nguồn, môi trường.
+Quy trình: đọc → thiết kế → chạy → lưu bằng chứng.
+Kết thúc: báo cáo ca đã chạy, lỗi và giới hạn.
+Quy tắc: không tự bịa Pass/Fail hoặc bug.</pre>
+        <div class="panel-actions"><a class="button" href="skills/watch-qa/SKILL.md">Mở skill thực hành</a><a href="skills/watch-qa/SKILL.md" download="SKILL.md">Tải SKILL.md</a></div><h3>Bài tập khi bảo vệ</h3><p>Chọn quy tắc “hủy đơn chỉ hoàn kho một lần”, giải thích cách skill yêu cầu chuẩn bị dữ liệu, thực thi, ghi nhận và retest. Đưa ra một ví dụ báo cáo có bằng chứng thay vì chỉ đọc tên công cụ.</p>
+      </section>
+      <section class="lab-panel" role="tabpanel" id="panel-defense" aria-labelledby="tab-defense" tabindex="0" hidden>
+        <h2>Chuẩn bị một demo có thể lặp lại</h2><p class="panel-lead">Checklist này chỉ theo dõi chuẩn bị, không thay thế kết quả kiểm thử. Được lưu riêng trên trình duyệt này.</p>
+        <div id="rehearsal-list" class="rehearsal-list"></div><p id="rehearsal-status" role="status"></p>
+        <h3>Kịch bản 10–12 phút</h3><div class="agenda"><div><b>2 phút</b><span>Nguồn AI, kiến trúc local và phạm vi kiểm thử.</span></div><div><b>3 phút</b><span>Test design, 90 ca và demo xác nhận/hủy đơn.</span></div><div><b>3 phút</b><span>Chạy suite Katalon, xem report và ảnh bằng chứng.</span></div><div><b>2 phút</b><span>JMeter: thread, assertion, Error %, p95, throughput.</span></div><div><b>2 phút</b><span>Fail mô phỏng → chạy lại Pass; giới hạn & hỏi đáp.</span></div></div><div class="panel-actions"><a class="button" href="docs/DEFENSE.md">Dàn ý bảo vệ</a><a href="qa-portfolio.html#questions">Xem đủ 8 câu hỏi</a></div>
+      </section>
+    </div>
+  </main>
+  <footer class="lab-footer"><span>AUREL QA · Đồ án thực hành</span><span>Pass cần bằng chứng. Fail cần tái hiện.</span></footer>
+</body></html>

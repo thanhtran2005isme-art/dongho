@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Liên hệ mô phỏng cục bộ tại AUREL phục vụ đồ án kiểm thử.">
+  <meta name="theme-color" content="#087b6a"><title>Liên hệ | AUREL</title>
+  <link rel="stylesheet" href="storefront.css">
+  <script defer src="store.js"></script><script defer src="storefront.js"></script>
+</head>
+<body>
+  <div id="site-header-root"></div>
+  <main class="page-shell wrap">
+    <nav class="breadcrumb" aria-label="Đường dẫn">
+      <a href="home.html">Trang chủ</a><span>/</span><span>Liên hệ</span>
+    </nav>
+    <div class="page-head">
+      <div>
+        <h1>Liên hệ AUREL</h1>
+        <p>Biểu mẫu tiếp nhận yêu cầu mô phỏng cục bộ dành cho thực hành kiểm thử giao diện và xác thực dữ liệu.</p>
+      </div>
+    </div>
+
+    <div class="notice warn" data-testid="contact-simulation-notice">
+      <strong>Lưu ý quan trọng:</strong> AUREL là website đồ án thực hành không có máy chủ gửi thư hay doanh nghiệp vận hành thật. Mọi yêu cầu gửi từ biểu mẫu này <strong>chỉ được lưu cục bộ trên trình duyệt của bạn (<code>localStorage</code>) và chưa được gửi đến bất kỳ doanh nghiệp thật nào</strong>.
+    </div>
+
+    <div class="split-layout">
+      <section class="surface">
+        <h2 style="font-size:30px;margin-bottom:14px">Gửi yêu cầu mô phỏng</h2>
+        <div id="contact-success" role="status" aria-live="polite"></div>
+        <form id="contact-form" class="form-stack" novalidate data-testid="contact-form">
+          <div class="field-group">
+            <label for="ct-name">Họ và tên *</label>
+            <input id="ct-name" name="name" type="text" required maxlength="100" placeholder="Nhập họ tên người gửi (dữ liệu thử)" aria-describedby="err-name">
+            <p id="err-name" class="field-error" data-error-for="name" role="alert"></p>
+          </div>
+          <div class="form-row-2">
+            <div class="field-group">
+              <label for="ct-email">Email *</label>
+              <input id="ct-email" name="email" type="email" required maxlength="150" placeholder="ban@example.com" aria-describedby="err-email">
+              <p id="err-email" class="field-error" data-error-for="email" role="alert"></p>
+            </div>
+            <div class="field-group">
+              <label for="ct-phone">Số điện thoại (tùy chọn)</label>
+              <input id="ct-phone" name="phone" type="tel" maxlength="10" placeholder="0901234567" aria-describedby="err-phone">
+              <p id="err-phone" class="field-error" data-error-for="phone" role="alert"></p>
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="ct-subject">Chủ đề *</label>
+            <select id="ct-subject" name="subject" required aria-describedby="err-subject">
+              <option value="">Chọn chủ đề liên hệ</option>
+              <option value="Tư vấn sản phẩm (mô phỏng)">Tư vấn sản phẩm (mô phỏng)</option>
+              <option value="Hỗ trợ đơn hàng (mô phỏng)">Hỗ trợ đơn hàng (mô phỏng)</option>
+              <option value="Phản hồi kiểm thử / đồ án">Phản hồi kiểm thử / đồ án</option>
+            </select>
+            <p id="err-subject" class="field-error" data-error-for="subject" role="alert"></p>
+          </div>
+          <div class="field-group">
+            <label for="ct-message">Nội dung yêu cầu *</label>
+            <textarea id="ct-message" name="message" rows="4" required maxlength="1000" placeholder="Nhập nội dung cần gửi (tối thiểu 10 ký tự)…" aria-describedby="err-message"></textarea>
+            <p id="err-message" class="field-error" data-error-for="message" role="alert"></p>
+          </div>
+          <button type="submit" class="button" data-testid="contact-submit-btn">Lưu yêu cầu mô phỏng</button>
+        </form>
+      </section>
+
+      <aside class="surface-soft">
+        <h2 style="font-size:28px;margin-bottom:10px">Thông tin dự án</h2>
+        <p class="field-hint" style="margin-bottom:14px">
+          Website AUREL không sử dụng địa chỉ cửa hàng, số hotline doanh nghiệp hay chính sách bảo hành giả lập.
+        </p>
+        <div class="spec-list" style="grid-template-columns:1fr;margin-bottom:20px">
+          <div class="spec-item"><small>Tên dự án</small><strong>AUREL Watch Store &amp; QA</strong></div>
+          <div class="spec-item"><small>Môi trường</small><strong>HTML · CSS · JavaScript · localStorage</strong></div>
+          <div class="spec-item"><small>Kho lưu yêu cầu liên hệ</small><strong><code>chrono-contact-messages-v1</code></strong></div>
+        </div>
+        <h3 style="font-size:16px;margin-bottom:10px">Yêu cầu đã lưu trên trình duyệt này</h3>
+        <div id="saved-messages" data-testid="saved-contact-messages"></div>
+      </aside>
+    </div>
+  </main>
+  <div id="site-footer-root"></div>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const SF = window.AurelStorefront;
+      SF.initShell({ activeNav: 'contact' });
+
+      const form = document.getElementById('contact-form');
+      const successBox = document.getElementById('contact-success');
+      const listBox = document.getElementById('saved-messages');
+
+      const current = SF.getCurrentCustomer();
+      if (current) {
+        form.elements.name.value = current.name;
+        form.elements.email.value = current.email;
+        form.elements.phone.value = current.phone;
+      }
+
+      function renderMessages() {
+        const list = SF.readContactMessages();
+        if (!list.length) {
+          listBox.innerHTML = '<p class="field-hint">Chưa có yêu cầu nào được lưu cục bộ.</p>';
+          return;
+        }
+        listBox.innerHTML = list.slice(0, 5).map(m => `
+          <div class="spec-item" style="margin-bottom:10px;background:#fff">
+            <small>${SF.esc(SF.formatDate(m.createdAt))} · ${SF.esc(m.subject)}</small>
+            <strong>${SF.esc(m.name)} (${SF.esc(m.email)})</strong>
+            <p style="font-size:13px;color:var(--muted);margin:6px 0 0">${SF.esc(m.message)}</p>
+          </div>`).join('');
+      }
+
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        successBox.innerHTML = '';
+        try {
+          const saved = SF.submitContactMessage({
+            name: form.elements.name.value,
+            email: form.elements.email.value,
+            phone: form.elements.phone.value,
+            subject: form.elements.subject.value,
+            message: form.elements.message.value
+          });
+          SF.setFieldErrors(form, {});
+          form.elements.subject.value = '';
+          form.elements.message.value = '';
+          successBox.innerHTML = `<div class="notice success" data-testid="contact-success-notice"><strong>Đã lưu yêu cầu mô phỏng (${SF.esc(saved.id)})!</strong> Lưu ý: Yêu cầu chỉ lưu trong trình duyệt này để phục vụ kiểm thử, <strong>chưa được gửi đến doanh nghiệp thật</strong>.</div>`;
+          renderMessages();
+        } catch (err) {
+          SF.setFieldErrors(form, err.fields || {});
+        }
+      });
+
+      renderMessages();
+    });
+  </script>
+</body>
+</html>

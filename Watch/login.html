@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Đăng nhập tài khoản khách hàng tại AUREL.">
+  <meta name="theme-color" content="#087b6a"><title>Đăng nhập khách hàng | AUREL</title>
+  <link rel="stylesheet" href="storefront.css">
+  <script defer src="store.js"></script><script defer src="storefront.js"></script>
+</head>
+<body>
+  <div id="site-header-root"></div>
+  <main class="page-shell wrap">
+    <nav class="breadcrumb" aria-label="Đường dẫn">
+      <a href="home.html">Trang chủ</a><span>/</span><span>Đăng nhập khách hàng</span>
+    </nav>
+    <div class="auth-shell surface">
+      <h1>Đăng nhập khách hàng</h1>
+      <p class="field-hint" style="margin-bottom:16px">Đăng nhập để xem hồ sơ và theo dõi các đơn hàng thuộc tài khoản của bạn.</p>
+      <div class="notice warn" data-testid="local-auth-notice">
+        <strong>Xác thực mô phỏng cục bộ:</strong> Phiên đăng nhập khách được lưu trong <code>localStorage</code> trình duyệt phục vụ đồ án, <strong>không phải bảo mật production</strong>. Không dùng <code>admin / Admin@123</code> tại đây.
+      </div>
+      <div id="logged-in-panel" hidden></div>
+      <form id="login-form" class="form-stack" novalidate data-testid="customer-login-form">
+        <div class="field-group">
+          <label for="login-email">Email *</label>
+          <input id="login-email" name="email" type="email" required maxlength="150" autocomplete="email" placeholder="khach@example.com" aria-describedby="err-email">
+          <p id="err-email" class="field-error" data-error-for="email" role="alert"></p>
+        </div>
+        <div class="field-group">
+          <label for="login-password">Mật khẩu *</label>
+          <input id="login-password" name="password" type="password" required autocomplete="current-password" placeholder="Nhập mật khẩu" aria-describedby="err-password">
+          <p id="err-password" class="field-error" data-error-for="password" role="alert"></p>
+        </div>
+        <p id="login-form-error" class="form-error" role="alert" data-testid="login-error"></p>
+        <button type="submit" class="button" data-testid="login-submit-btn">Đăng nhập</button>
+      </form>
+      <div class="auth-footer">
+        <p>Chưa có tài khoản khách? <a href="register.html" id="to-register-link">Đăng ký tài khoản mới</a></p>
+        <p style="margin:6px 0 0">Đặt hàng vãng lai? <a href="orders.html">Tra cứu đơn hàng theo mã đơn →</a></p>
+        <p style="margin:6px 0 0">Quản trị viên / Nhân viên cửa hàng? <a href="index.html">Đăng nhập trang Quản lý cửa hàng →</a></p>
+      </div>
+    </div>
+  </main>
+  <div id="site-footer-root"></div>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const SF = window.AurelStorefront;
+      SF.initShell({ activeNav: 'account' });
+
+      const nextUrl = SF.safeNextUrl(SF.getParam('next'), 'account.html');
+      if (SF.getParam('next')) {
+        document.getElementById('to-register-link').href = `register.html?next=${encodeURIComponent(nextUrl)}`;
+      }
+
+      const form = document.getElementById('login-form');
+      const formErr = document.getElementById('login-form-error');
+      const loggedPanel = document.getElementById('logged-in-panel');
+
+      function renderAuthState() {
+        const current = SF.getCurrentCustomer();
+        if (current) {
+          loggedPanel.hidden = false;
+          form.hidden = true;
+          loggedPanel.innerHTML = `
+            <div class="notice success" data-testid="already-logged-in">
+              Bạn đã đăng nhập với tài khoản <strong>${SF.esc(current.name)}</strong> (${SF.esc(current.email)}).
+            </div>
+            <div class="detail-actions">
+              <a class="button" href="account.html">Vào hồ sơ tài khoản</a>
+              <a class="button secondary" href="orders.html">Xem đơn hàng</a>
+              <button type="button" class="button danger" id="quick-logout" data-testid="logout-btn">Đăng xuất</button>
+            </div>`;
+          document.getElementById('quick-logout').addEventListener('click', () => {
+            SF.logoutCustomer();
+            renderAuthState();
+          });
+        } else {
+          loggedPanel.hidden = true;
+          form.hidden = false;
+        }
+      }
+
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        formErr.textContent = '';
+        try {
+          SF.loginCustomer({
+            email: form.elements.email.value,
+            password: form.elements.password.value
+          });
+          location.href = nextUrl;
+        } catch (err) {
+          SF.setFieldErrors(form, err.fields || {});
+          if (!err.fields || err.fields.form) formErr.textContent = err.message;
+        }
+      });
+
+      renderAuthState();
+    });
+  </script>
+</body>
+</html>

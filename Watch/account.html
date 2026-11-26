@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Hồ sơ tài khoản khách hàng AUREL.">
+  <meta name="theme-color" content="#087b6a"><title>Tài khoản khách | AUREL</title>
+  <link rel="stylesheet" href="storefront.css">
+  <script defer src="store.js"></script><script defer src="storefront.js"></script>
+</head>
+<body>
+  <div id="site-header-root"></div>
+  <main class="page-shell wrap">
+    <nav class="breadcrumb" aria-label="Đường dẫn">
+      <a href="home.html">Trang chủ</a><span>/</span><span>Tài khoản khách</span>
+    </nav>
+    <div id="account-root" aria-live="polite">
+      <p class="notice">Đang tải thông tin tài khoản…</p>
+    </div>
+  </main>
+  <div id="site-footer-root"></div>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const SF = window.AurelStorefront;
+      SF.initShell({ activeNav: 'account' });
+
+      const root = document.getElementById('account-root');
+
+      function render(feedbackMsg = '') {
+        const customer = SF.getCurrentCustomer();
+        if (!customer) {
+          root.innerHTML = `
+            <div class="empty-state" data-testid="account-guest-state">
+              <h1>Bạn chưa đăng nhập tài khoản khách</h1>
+              <p>Đăng nhập hoặc tạo tài khoản khách để quản lý thông tin cá nhân và theo dõi lịch sử đơn hàng của riêng bạn. Tài khoản khách tách biệt với tài khoản quản lý cửa hàng.</p>
+              <div class="actions">
+                <a class="button" href="login.html">Đăng nhập</a>
+                <a class="button secondary" href="register.html">Đăng ký tài khoản</a>
+                <a class="button secondary" href="orders.html">Tra cứu đơn vãng lai</a>
+              </div>
+            </div>`;
+          return;
+        }
+
+        let myOrders;
+        try { myOrders = SF.getVisibleOrdersForCurrentUser(); } catch { myOrders = []; }
+        const wishCount = SF.getWishlistCount();
+        const cartCount = SF.getCartCount();
+
+        root.innerHTML = `
+          <div class="page-head">
+            <div>
+              <h1>Xin chào, ${SF.esc(customer.name)}</h1>
+              <p>Quản lý hồ sơ khách hàng mô phỏng trên trình duyệt này. Thay đổi được giữ qua các lần tải lại trang.</p>
+            </div>
+            <button type="button" class="button danger small" id="logout-btn" data-testid="logout-btn">Đăng xuất</button>
+          </div>
+          ${feedbackMsg ? `<div class="notice success" role="status" data-testid="profile-feedback">${SF.esc(feedbackMsg)}</div>` : ''}
+          <div class="account-grid">
+            <aside class="surface-soft">
+              <h2 style="font-size:28px;margin-bottom:8px">Lối tắt tài khoản</h2>
+              <p class="field-hint">Email đăng nhập: <strong data-testid="account-email">${SF.esc(customer.email)}</strong></p>
+              <p class="field-hint">Mã tài khoản: <code>${SF.esc(customer.id)}</code></p>
+              <div class="quick-links">
+                <a class="quick-link" href="orders.html" data-testid="account-orders-link">
+                  <span>Lịch sử đơn hàng</span>
+                  <span class="count-pill">${myOrders.length}</span>
+                </a>
+                <a class="quick-link" href="wishlist.html" data-testid="account-wishlist-link">
+                  <span>Sản phẩm yêu thích</span>
+                  <span class="count-pill">${wishCount}</span>
+                </a>
+                <a class="quick-link" href="cart.html">
+                  <span>Giỏ hàng hiện tại</span>
+                  <span class="count-pill">${cartCount}</span>
+                </a>
+              </div>
+              <div class="notice warn" style="margin-top:18px;margin-bottom:0">
+                Xác thực lưu cục bộ trong <code>localStorage</code> cho mục đích thực hành kiểm thử, không phải bảo mật production.
+              </div>
+            </aside>
+            <section class="surface">
+              <h2 style="font-size:30px;margin-bottom:14px">Thông tin cá nhân</h2>
+              <form id="profile-form" class="form-stack" novalidate data-testid="profile-form">
+                <div class="field-group">
+                  <label for="prof-name">Họ và tên *</label>
+                  <input id="prof-name" name="name" type="text" required maxlength="100" value="${SF.esc(customer.name)}" aria-describedby="err-name">
+                  <p id="err-name" class="field-error" data-error-for="name" role="alert"></p>
+                </div>
+                <div class="form-row-2">
+                  <div class="field-group">
+                    <label for="prof-email">Email tài khoản</label>
+                    <input id="prof-email" type="email" value="${SF.esc(customer.email)}" disabled>
+                    <span class="field-hint">Email dùng để định danh đăng nhập cục bộ.</span>
+                  </div>
+                  <div class="field-group">
+                    <label for="prof-phone">Số điện thoại *</label>
+                    <input id="prof-phone" name="phone" type="tel" required maxlength="10" value="${SF.esc(customer.phone)}" aria-describedby="err-phone">
+                    <p id="err-phone" class="field-error" data-error-for="phone" role="alert"></p>
+                  </div>
+                </div>
+                <div class="field-group">
+                  <label for="prof-address">Địa chỉ nhận hàng mặc định</label>
+                  <input id="prof-address" name="address" type="text" maxlength="300" value="${SF.esc(customer.address)}" placeholder="Nhập địa chỉ mặc định để tự điền khi đặt hàng" aria-describedby="err-address">
+                  <p id="err-address" class="field-error" data-error-for="address" role="alert"></p>
+                </div>
+                <p id="profile-form-error" class="form-error" role="alert"></p>
+                <div>
+                  <button type="submit" class="button" data-testid="profile-save-btn">Lưu thay đổi</button>
+                </div>
+              </form>
+            </section>
+          </div>
+        `;
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+          SF.logoutCustomer();
+          render();
+        });
+
+        const form = document.getElementById('profile-form');
+        const formErr = document.getElementById('profile-form-error');
+        form.addEventListener('submit', async e => {
+          e.preventDefault();
+          formErr.textContent = '';
+          try {
+            await SF.updateCustomerProfile({
+              name: form.elements.name.value,
+              phone: form.elements.phone.value,
+              address: form.elements.address.value
+            });
+            render('Đã cập nhật thông tin cá nhân thành công.');
+          } catch (err) {
+            SF.setFieldErrors(form, err.fields || {});
+            if (!err.fields) formErr.textContent = err.message;
+          }
+        });
+      }
+
+      render();
+    });
+  </script>
+</body>
+</html>

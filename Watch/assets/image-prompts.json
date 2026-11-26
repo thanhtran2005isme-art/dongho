@@ -1,0 +1,23 @@
+{
+  "tool": "Built-in image_gen",
+  "date": "2026-11-26",
+  "usage": "AI generated illustrative photography for AUREL; not official manufacturer photos",
+  "prompts": [
+    [
+      "hero",
+      "Use case: product-mockup. Asset type: luxury watch boutique website hero photo, wide horizontal 3:2 composition. Primary request: luminous premium editorial photograph of an unbranded stainless steel wristwatch with subtle jade green sunburst dial, resting diagonally on a pale mint stone pedestal, beside an ivory silk fabric fold. Very realistic watch proportions, pristine polished steel, beautiful subtle specular highlights and crisp dial markers, hands at 10:10. A fresh white and soft jade green palette, natural bright window light with elegant soft shadows. Single hero watch large and fully visible, centered right with breathing space; clean white studio environment. Art directed for a modern Vietnamese watch boutique called AUREL. No text, no logo, no watermark, no collage, no website UI."
+    ],
+    [
+      "steel",
+      "Use case: product-mockup. Asset type: square ecommerce watch photograph. A single unbranded premium stainless steel analog wristwatch with deep jade teal sunburst dial, silver baton indices, polished round silver case and linked steel bracelet, photographed top-down at a slight elegant diagonal on a pristine off-white studio background. Entire watch visible including bracelet. Hands at 10:10. Soft daylight, realistic product photography, exact material detail, generous margin all around. Subtle small soft shadow, no pedestal, no props. No lettering, no words, no manufacturer logos, no watermark, no collage."
+    ],
+    [
+      "leather",
+      "Use case: product-mockup. Asset type: square ecommerce watch photograph. A single unbranded classic dress wristwatch with clean ivory analog dial, slender polished warm gold case, fine hour markers, dark espresso brown leather strap with detailed grain, photographed top-down at a slight elegant diagonal on a pristine off-white studio background. Entire watch visible including straps. Hands at 10:10. Soft daylight, realistic product photography, exact material detail and generous margin all around. Subtle soft shadow, no pedestal, no props. No lettering, no words, no manufacturer logos, no watermark, no collage."
+    ],
+    [
+      "digital",
+      "Use case: product-mockup. Asset type: square ecommerce watch photograph. A single unbranded stylish graphite black digital sport wristwatch with a compact rectangular brushed metal bezel, realistic gray LCD digital display and black flexible resin strap, photographed top-down at a slight elegant diagonal on a pristine off-white studio background. Entire watch visible including straps, beautiful precise realistic product proportions. Soft daylight, realistic catalog product photography, very fine material details and generous margin all around. Small soft shadow, no pedestal, no props. No words, no manufacturer logos, no watermark, no collage."
+    ]
+  ]
+}

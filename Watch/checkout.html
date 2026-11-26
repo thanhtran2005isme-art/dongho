@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Đặt hàng mô phỏng tại AUREL — kiểm tra tồn kho và tạo đơn nháp liên thông trang quản lý.">
+  <meta name="theme-color" content="#087b6a"><title>Đặt hàng | AUREL</title>
+  <link rel="stylesheet" href="storefront.css">
+  <script defer src="store.js"></script><script defer src="storefront.js"></script>
+</head>
+<body>
+  <div id="site-header-root"></div>
+  <main class="page-shell wrap">
+    <nav class="breadcrumb" aria-label="Đường dẫn">
+      <a href="home.html">Trang chủ</a><span>/</span>
+      <a href="cart.html">Giỏ hàng</a><span>/</span>
+      <span>Đặt hàng</span>
+    </nav>
+    <div class="page-head">
+      <div>
+        <h1>Thông tin đặt hàng</h1>
+        <p>Đặt hàng mô phỏng phục vụ đồ án. Đơn mới tạo ở trạng thái <strong>Nháp</strong> (chưa trừ tồn kho) cho đến khi cửa hàng xác nhận.</p>
+      </div>
+      <a class="button secondary small" href="cart.html">← Quay lại giỏ hàng</a>
+    </div>
+    <div id="checkout-root">
+      <p class="notice">Đang chuẩn bị đơn hàng…</p>
+    </div>
+  </main>
+  <div id="site-footer-root"></div>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const SF = window.AurelStorefront;
+      SF.initShell({ activeNav: 'cart' });
+
+      const root = document.getElementById('checkout-root');
+      let idempotencyKey = SF.makeId('idem_');
+      let expectedPrices = {};
+      let submitting = false;
+
+      function renderCheckout(preserveValues = null, topAlert = null) {
+        let resolved;
+        try { resolved = SF.getResolvedCart(); } catch { SF.renderStoreError(root); return; }
+        if (!resolved.lines.length) {
+          root.innerHTML = `
+            <div class="empty-state" data-testid="checkout-empty">
+              <h2>Không có sản phẩm để đặt hàng</h2>
+              <p>Giỏ hàng của bạn hiện đang trống. Hãy chọn đồng hồ trước khi thanh toán mô phỏng.</p>
+              <div class="actions">
+                <a class="button" href="home.html#san-pham">Khám phá bộ sưu tập</a>
+                <a class="button secondary" href="orders.html">Xem đơn hàng</a>
+              </div>
+            </div>`;
+          return;
+        }
+
+        if (resolved.hasBlockingIssues) {
+          root.innerHTML = `
+            <div class="empty-state" data-testid="checkout-blocked">
+              <h2>Giỏ hàng cần được cập nhật</h2>
+              <p>Một hoặc nhiều sản phẩm trong giỏ đã hết hàng, ngừng kinh doanh hoặc vượt tồn kho hiện tại. Vui lòng quay lại giỏ hàng để điều chỉnh.</p>
+              <div class="actions">
+                <a class="button" href="cart.html">Về giỏ hàng cập nhật</a>
+              </div>
+            </div>`;
+          return;
+        }
+
+        expectedPrices = {};
+        resolved.lines.forEach(l => { expectedPrices[l.productId] = l.livePrice; });
+
+        const customer = SF.getCurrentCustomer();
+        const vals = preserveValues || {
+          name: customer?.name || '',
+          phone: customer?.phone || '',
+          email: customer?.email || '',
+          address: customer?.address || '',
+          note: ''
+        };
+
+        const authBar = customer
+          ? `<div class="notice success" data-testid="checkout-customer-mode">Đang đặt hàng bằng tài khoản khách: <strong>${SF.esc(customer.name)}</strong> (${SF.esc(customer.email)}). Đơn hàng sẽ tự động liên kết vào lịch sử tài khoản của bạn.</div>`
+          : `<div class="notice" data-testid="checkout-guest-mode">Bạn đang đặt hàng với tư cách <strong>Khách vãng lai</strong>. <a href="login.html?next=checkout.html" style="text-decoration:underline;font-weight:600;color:var(--jade)">Đăng nhập tài khoản khách</a> để lưu lịch sử đơn hàng lâu dài.</div>`;
+
+        const alertHtml = topAlert
+          ? `<div class="notice ${topAlert.type}" role="alert" data-testid="checkout-alert">${SF.esc(topAlert.message)}</div>`
+          : resolved.hasPriceChanges
+            ? '<div class="notice warn" data-testid="checkout-price-notice">Một số sản phẩm đã cập nhật đơn giá theo dữ liệu mới nhất của cửa hàng. Vui lòng kiểm tra tổng tiền bên phải trước khi xác nhận.</div>'
+            : '';
+
+        const summaryItems = resolved.lines.map(l => `
+          <div class="summary-item">
+            <div>
+              <strong>${SF.esc(l.product.name)}</strong>
+              <small>${SF.esc(l.product.code)} · ${SF.money(l.livePrice)} × ${l.quantity}</small>
+            </div>
+            <strong style="white-space:nowrap">${SF.money(l.lineTotal)}</strong>
+          </div>`).join('');
+
+        root.innerHTML = `
+          ${authBar}
+          ${alertHtml}
+          <div class="split-layout">
+            <section class="surface">
+              <h2 style="font-size:30px;margin-bottom:14px">Thông tin người nhận</h2>
+              <form id="checkout-form" class="form-stack" novalidate data-testid="checkout-form">
+                <div class="field-group">
+                  <label for="co-name">Họ và tên *</label>
+                  <input id="co-name" name="name" type="text" required maxlength="100" autocomplete="name" value="${SF.esc(vals.name)}" placeholder="Ví dụ: Nguyễn Văn An" aria-describedby="err-name">
+                  <p id="err-name" class="field-error" data-error-for="name" role="alert"></p>
+                </div>
+                <div class="form-row-2">
+                  <div class="field-group">
+                    <label for="co-phone">Số điện thoại *</label>
+                    <input id="co-phone" name="phone" type="tel" required maxlength="10" autocomplete="tel" value="${SF.esc(vals.phone)}" placeholder="0901234567" aria-describedby="err-phone">
+                    <p id="err-phone" class="field-error" data-error-for="phone" role="alert"></p>
+                  </div>
+                  <div class="field-group">
+                    <label for="co-email">Email *</label>
+                    <input id="co-email" name="email" type="email" required maxlength="150" autocomplete="email" value="${SF.esc(vals.email)}" placeholder="khach@example.com" aria-describedby="err-email">
+                    <p id="err-email" class="field-error" data-error-for="email" role="alert"></p>
+                  </div>
+                </div>
+                <div class="field-group">
+                  <label for="co-address">Địa chỉ nhận hàng *</label>
+                  <input id="co-address" name="address" type="text" required maxlength="300" autocomplete="street-address" value="${SF.esc(vals.address)}" placeholder="Số nhà, đường, quận/huyện, tỉnh/thành phố (dữ liệu mẫu)" aria-describedby="err-address">
+                  <p id="err-address" class="field-error" data-error-for="address" role="alert"></p>
+                </div>
+                <div class="field-group">
+                  <label for="co-note">Ghi chú đơn hàng (tùy chọn)</label>
+                  <textarea id="co-note" name="note" rows="3" maxlength="500" placeholder="Ghi chú thêm cho cửa hàng nếu có…" aria-describedby="err-note">${SF.esc(vals.note)}</textarea>
+                  <p id="err-note" class="field-error" data-error-for="note" role="alert"></p>
+                </div>
+                <div class="notice" style="margin:4px 0">
+                  <strong>Đặt hàng mô phỏng cục bộ:</strong> Website không thu thập số thẻ ngân hàng, ví điện tử hay thực hiện thanh toán thật. Không có phí vận chuyển, thuế hoặc mã giảm giá tự động.
+                </div>
+                <p id="checkout-form-error" class="form-error" role="alert" data-testid="checkout-error"></p>
+                <div>
+                  <button type="submit" class="button" id="place-order-btn" data-testid="place-order-btn">Xác nhận đặt hàng (Mô phỏng)</button>
+                </div>
+              </form>
+            </section>
+            <aside class="summary-card" aria-label="Tóm tắt đơn hàng">
+              <h2>Tóm tắt đơn hàng</h2>
+              <div class="summary-items" data-testid="checkout-summary-items">
+                ${summaryItems}
+              </div>
+              <div class="summary-row">
+                <span>Số lượng</span>
+                <span>${resolved.totalCount} sản phẩm</span>
+              </div>
+              <div class="summary-row">
+                <span>Phí vận chuyển / thuế / giảm giá</span>
+                <span>Không áp dụng</span>
+              </div>
+              <div class="summary-row total">
+                <span>Tổng thanh toán</span>
+                <strong data-testid="checkout-total">${SF.money(resolved.validTotal)}</strong>
+              </div>
+            </aside>
+          </div>
+        `;
+
+        const form = document.getElementById('checkout-form');
+        const submitBtn = document.getElementById('place-order-btn');
+        const formErr = document.getElementById('checkout-form-error');
+
+        form.addEventListener('submit', async e => {
+          e.preventDefault();
+          if (submitting) return;
+
+          const data = {
+            name: form.elements.name.value.trim(),
+            phone: form.elements.phone.value.trim(),
+            email: form.elements.email.value.trim(),
+            address: form.elements.address.value.trim(),
+            note: form.elements.note.value.trim()
+          };
+
+          const fieldErrors = {};
+          if (!data.name || data.name.length > 100) fieldErrors.name = 'Họ tên phải có từ 1 đến 100 ký tự.';
+          if (!/^0\d{9}$/.test(data.phone)) fieldErrors.phone = 'Số điện thoại phải gồm 10 chữ số và bắt đầu bằng số 0.';
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email) || data.email.length > 150) fieldErrors.email = 'Email không đúng định dạng.';
+          if (data.address.length < 5 || data.address.length > 300) fieldErrors.address = 'Địa chỉ nhận hàng phải có từ 5 đến 300 ký tự.';
+          if (data.note.length > 500) fieldErrors.note = 'Ghi chú tối đa 500 ký tự.';
+
+          SF.setFieldErrors(form, fieldErrors);
+          formErr.textContent = '';
+          if (Object.keys(fieldErrors).length) return;
+
+          submitting = true;
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Đang tạo đơn hàng…';
+
+          try {
+            const res = await SF.placeOrder(data, expectedPrices, idempotencyKey);
+            location.href = `order-success.html?id=${encodeURIComponent(res.order.id)}`;
+          } catch (err) {
+            submitting = false;
+            if (err.code === 'PRICE_CHANGED') {
+              SF.syncCartAddedPrices();
+              renderCheckout(data, { type: 'warn', message: err.message });
+              return;
+            }
+            // Kiểm tra xem sản phẩm có vừa hết hàng / ngừng bán không để hiển thị rõ.
+            let latest = null;
+            try { latest = SF.getResolvedCart(); } catch { /* dữ liệu hỏng: hiển thị lỗi tại biểu mẫu */ }
+            if (latest && latest.hasBlockingIssues) {
+              renderCheckout(data, { type: 'error', message: err.message });
+              return;
+            }
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Xác nhận đặt hàng (Mô phỏng)';
+            formErr.textContent = err.message || 'Không thể đặt hàng. Vui lòng thử lại.';
+          }
+        });
+      }
+
+      renderCheckout();
+    });
+  </script>
+</body>
+</html>

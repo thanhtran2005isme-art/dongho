@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Đăng ký tài khoản khách hàng mô phỏng tại AUREL.">
+  <meta name="theme-color" content="#087b6a"><title>Đăng ký tài khoản khách | AUREL</title>
+  <link rel="stylesheet" href="storefront.css">
+  <script defer src="store.js"></script><script defer src="storefront.js"></script>
+</head>
+<body>
+  <div id="site-header-root"></div>
+  <main class="page-shell wrap">
+    <nav class="breadcrumb" aria-label="Đường dẫn">
+      <a href="home.html">Trang chủ</a><span>/</span><span>Đăng ký tài khoản khách</span>
+    </nav>
+    <div class="auth-shell surface">
+      <h1>Tạo tài khoản khách</h1>
+      <p class="field-hint" style="margin-bottom:16px">Tài khoản khách dùng để lưu hồ sơ cá nhân và theo dõi lịch sử đơn hàng riêng biệt với tài khoản nhân viên/quản trị cửa hàng.</p>
+      <div class="notice warn" data-testid="local-auth-notice">
+        <strong>Xác thực mô phỏng cục bộ:</strong> Tài khoản được lưu trên trình duyệt này (<code>localStorage</code>) để phục vụ đồ án kiểm thử, <strong>không phải bảo mật production</strong>. Không dùng mật khẩu thật của bạn và không dùng <code>admin / Admin@123</code> làm tài khoản khách.
+      </div>
+      <div id="already-logged" hidden></div>
+      <form id="register-form" class="form-stack" novalidate data-testid="register-form">
+        <div class="field-group">
+          <label for="reg-name">Họ và tên *</label>
+          <input id="reg-name" name="name" type="text" required maxlength="100" autocomplete="name" placeholder="Ví dụ: Lê Minh Khang" aria-describedby="err-name">
+          <p id="err-name" class="field-error" data-error-for="name" role="alert"></p>
+        </div>
+        <div class="field-group">
+          <label for="reg-email">Email *</label>
+          <input id="reg-email" name="email" type="email" required maxlength="150" autocomplete="email" placeholder="khach@example.com" aria-describedby="err-email">
+          <p id="err-email" class="field-error" data-error-for="email" role="alert"></p>
+        </div>
+        <div class="field-group">
+          <label for="reg-phone">Số điện thoại *</label>
+          <input id="reg-phone" name="phone" type="tel" required maxlength="10" autocomplete="tel" placeholder="0901234567" aria-describedby="err-phone">
+          <p id="err-phone" class="field-error" data-error-for="phone" role="alert"></p>
+        </div>
+        <div class="field-group">
+          <label for="reg-password">Mật khẩu *</label>
+          <input id="reg-password" name="password" type="password" required minlength="8" autocomplete="new-password" placeholder="Tối thiểu 8 ký tự (mật khẩu thử nghiệm)" aria-describedby="err-password">
+          <p id="err-password" class="field-error" data-error-for="password" role="alert"></p>
+        </div>
+        <div class="field-group">
+          <label for="reg-confirm">Xác nhận mật khẩu *</label>
+          <input id="reg-confirm" name="confirmPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="Nhập lại mật khẩu" aria-describedby="err-confirm">
+          <p id="err-confirm" class="field-error" data-error-for="confirmPassword" role="alert"></p>
+        </div>
+        <p id="reg-form-error" class="form-error" role="alert" data-testid="register-error"></p>
+        <button type="submit" class="button" data-testid="register-submit-btn">Đăng ký tài khoản</button>
+      </form>
+      <div class="auth-footer">
+        <p>Đã có tài khoản khách? <a href="login.html" id="to-login-link">Đăng nhập ngay</a></p>
+        <p style="margin:6px 0 0">Bạn là quản trị viên hoặc nhân viên? <a href="index.html">Mở trang Quản lý cửa hàng →</a></p>
+      </div>
+    </div>
+  </main>
+  <div id="site-footer-root"></div>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const SF = window.AurelStorefront;
+      SF.initShell({ activeNav: 'account' });
+
+      const nextUrl = SF.safeNextUrl(SF.getParam('next'), 'account.html');
+      if (SF.getParam('next')) {
+        document.getElementById('to-login-link').href = `login.html?next=${encodeURIComponent(nextUrl)}`;
+      }
+
+      const current = SF.getCurrentCustomer();
+      const form = document.getElementById('register-form');
+      const already = document.getElementById('already-logged');
+      const formErr = document.getElementById('reg-form-error');
+
+      if (current) {
+        already.hidden = false;
+        already.innerHTML = `<div class="notice success">Bạn đang đăng nhập tài khoản khách <strong>${SF.esc(current.name)}</strong> (${SF.esc(current.email)}). <a href="account.html" style="text-decoration:underline;font-weight:600">Mở hồ sơ</a> hoặc đăng xuất trước khi tạo tài khoản khác.</div>`;
+      }
+
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        formErr.textContent = '';
+        try {
+          SF.registerCustomer({
+            name: form.elements.name.value,
+            email: form.elements.email.value,
+            phone: form.elements.phone.value,
+            password: form.elements.password.value,
+            confirmPassword: form.elements.confirmPassword.value
+          });
+          location.href = nextUrl;
+        } catch (err) {
+          SF.setFieldErrors(form, err.fields || {});
+          if (!err.fields || err.fields.form) formErr.textContent = err.message;
+        }
+      });
+    });
+  </script>
+</body>
+</html>
