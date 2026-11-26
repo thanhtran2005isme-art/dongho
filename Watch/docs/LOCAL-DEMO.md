@@ -35,7 +35,7 @@ Nạp demo thay dữ liệu nghiệp vụ sau khi xác nhận, giữ tài khoả
 | Test case nhiều, truy vết yêu cầu | QA → 90 test case; lọc chức năng/ưu tiên/trạng thái |
 | Test design | Lab → thử biên; tài liệu TEST-DESIGN |
 | AI hỗ trợ test | Lab → tạo/chỉnh/tải prompt; review đầu ra |
-| Tự động | QA → 24 ca nghiệp vụ; 12 script Katalon; suite Playwright |
+| Tự động | QA → 24 ca nghiệp vụ; Test Case Katalon cần xây dựng mới; suite Playwright |
 | Skill | Lab → đọc/tải skill QA trong dự án |
 | Pass/Fail/retest | QA → chạy thật; Demo Fail mô phỏng → chạy lại; ghi ca thủ công có evidence |
 | Katalon | Lab → Katalon; docs/KATALON.md |

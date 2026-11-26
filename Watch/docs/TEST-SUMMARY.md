@@ -1,3 +1,5 @@
+**Cập nhật phạm vi:** Bộ script Katalon KT-001…KT-022 và các ZIP cũ đã được gỡ bỏ theo yêu cầu. Các thông tin bên dưới là lịch sử, không đại diện cho bộ Test Case Katalon mới. Không thay đổi kết quả lịch sử.
+
 # Kết quả bản 1.4 (bàn giao Claude) — 26/11/2026
 
 Rà soát và chạy thật sau khi Antigravity hoàn thiện các trang khách. Phạm vi: HTML/CSS/JS thuần, localStorage, không backend/MySQL.

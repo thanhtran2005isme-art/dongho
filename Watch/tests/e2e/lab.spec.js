@@ -14,9 +14,8 @@ test('LAB-02 Prompt xuất theo chức năng đã chọn; không giả là AI đ
   const downloading=page.waitForEvent('download');await page.getByRole('button',{name:'Tải prompt .txt'}).click();const download=await downloading;
   const body=require('node:fs').readFileSync(await download.path(),'utf8');expect(body).toContain('FR-03');expect(body).toContain('Không tự ghi Pass/Fail');
 });
-test('LAB-03 Katalon 12 script tải được; JMeter tính cấu hình, không báo Pass',async({page,request})=>{
-  await page.goto('/lab.html#katalon');await expect(page.locator('#katalon-cases a')).toHaveCount(12);await expect(page.locator('#panel-katalon')).toContainText('Not Run');
-  for(const url of await page.locator('#katalon-cases a').evaluateAll(links=>links.map(a=>a.getAttribute('href')))){const r=await request.get('/'+url);expect(r.status()).toBe(200);expect(await r.text()).toContain('WebUI.closeBrowser()');}
+test('LAB-03 Hướng dẫn Katalon không còn script cũ; JMeter tính cấu hình, không báo Pass',async({page,request})=>{
+  await page.goto('/lab.html#katalon');await expect(page.locator('#panel-katalon a[href*=".groovy"], #panel-katalon a[href*="katalon-scripts.zip"]')).toHaveCount(0);await expect(page.locator('#panel-katalon')).toContainText('Not Run');
   await page.getByRole('tab',{name:/Apache JMeter/}).click();await page.locator('#load-users').selectOption('25');await expect(page.locator('#load-samples')).toHaveText('1000');await expect(page.locator('#jmeter-command')).toContainText('-Jusers=25');
   const plan=await request.get('/testing/jmeter/chrono-static.jmx');expect(plan.ok()).toBe(true);expect(await plan.text()).toContain('ResponseAssertion');
 });

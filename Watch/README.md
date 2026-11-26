@@ -35,11 +35,11 @@ Biểu tượng SVG bản 1.3 nằm trong dự án, không cần CDN. Ảnh qua 
 
 Nút **Demo Fail mô phỏng** cố ý tạo một lỗi ở nhóm cơ bản; chạy lại để thấy Fail → Pass. Không tính lỗi cố ý này thành bug sản phẩm. Dữ liệu ca thủ công lưu tại chrono-qa-runs-v2, tách dữ liệu cửa hàng. Sao lưu từng đợt bằng JSON, không sửa cùng đợt ở nhiều tab đồng thời.
 
-[lab.html](lab.html) có test design tương tác, prompt AI có thể chỉnh/tải, bộ Katalon, plan JMeter, skill mẫu và checklist bảo vệ. Công cụ prompt chỉ tạo văn bản; không tự gọi AI. Checklist không phải kết quả test.
+[lab.html](lab.html) có test design tương tác, prompt AI có thể chỉnh/tải, hướng dẫn Katalon, plan JMeter, skill mẫu và checklist bảo vệ. Công cụ prompt chỉ tạo văn bản; không tự gọi AI. Checklist không phải kết quả test.
 
 ## Katalon & JMeter
 
-- [12 script Katalon](testing/katalon/): tạo test case trong Studio rồi dán vào Script View. Đọc [hướng dẫn và ma trận](docs/KATALON.md). **Chưa chạy Katalon**, giữ Not Run đến khi có report thật.
+- Katalon Studio: bộ 22 script Groovy cũ và các gói ZIP đã được gỡ bỏ theo yêu cầu. Xây dựng Test Case/Test Suite trực tiếp trong Studio theo từng chức năng. Đọc [hướng dẫn](docs/KATALON.md); chỉ ghi kết quả khi có report thật.
 - [JMeter plan](testing/jmeter/chrono-static.jmx): 8 HTTP request, mỗi request có assertion mã 200 và nội dung, cấu hình threads/loops/ramp/host/port. Đọc [hướng dẫn](docs/JMETER.md). **Chưa chạy JMeter**. Plan chỉ đo HTTP tài nguyên, không chạy JS/localStorage hoặc nghiệp vụ bán hàng.
 
 ## Chạy bộ kiểm thử của dự án

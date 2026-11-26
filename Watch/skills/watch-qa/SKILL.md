@@ -20,7 +20,7 @@ Gắn mỗi ca với FR/NFR, tiền điều kiện, dữ liệu, bước, mong �
 
 ## Công cụ bắt buộc cho đồ án
 
-- Katalon: đọc `docs/KATALON.md`, dùng 12 script trong `testing/katalon/`. Chỉ ghi Pass sau khi chạy thực tế trong Studio và có report/ảnh/log.
+- Katalon: đọc `docs/KATALON.md`, bộ script cũ đã gỡ bỏ; xây dựng Test Case và Test Suite mới trực tiếp trong Katalon Studio. Chỉ ghi Pass sau khi chạy thực tế trong Studio và có report/ảnh/log.
 - JMeter: đọc `docs/JMETER.md`, dùng `testing/jmeter/chrono-static.jmx`. Phạm vi là HTTP tài nguyên tĩnh; không kết luận về đăng nhập/đơn hàng/localStorage từ JMeter.
 - Nạp demo là thao tác thay dữ liệu sau xác nhận trong Báo cáo; xuất JSON trước, giữ dữ liệu sổ QA. Không tự nạp demo khi đang kiểm tra ca có tiền điều kiện bộ gốc.
 
